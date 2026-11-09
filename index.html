@@ -55,7 +55,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .world{background:var(--w-bg);color:var(--w-fg);position:relative}
 .world #stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 .world .wrap{position:relative}
-.world .btn{background:var(--w-acc);color:var(--w-acc-ink)}
+.world .btn,.play .btn{background:var(--w-acc);color:var(--w-acc-ink)}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
 .back{background:transparent;border:2px solid var(--w-line);color:inherit;border-radius:999px;padding:6px 14px;font-weight:700}
 .hello{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;margin-bottom:20px}
@@ -576,7 +576,7 @@ delete BANK.malaika.Literacy;
 /* =========================================================
    ARCADE ENGINE — every format draws on the same banks
    ========================================================= */
-const STYLE={quest:"Daily quiz",adventure:"Adventure",sprint:"Speed sprint",exam:"Practice exam",tf:"True/False blitz",sowhat:"So What? challenge",scramble:"Word scramble",match:"Memory match"};
+const STYLE={quest:"Daily quiz",adventure:"Adventure",sprint:"Speed sprint",exam:"Practice exam",tf:"True/False blitz",sowhat:"So What? challenge",scramble:"Word scramble",match:"Memory match",bee:"Spelling Bee",spot:"Spot the spelling"};
 const cleanOpt=x=>x.includes("|")?x.split("|")[1]:x;
 function poolOf(k){const out=[];const tu=typeof tierUnlocked==="function"?tierUnlocked(k):1;for(const [s,arr] of Object.entries(BANK[k]||{}))for(const q of arr)if(!q.tier||q.tier<=tu)out.push({...q,subject:q.subject||s});return out}
 function mathItems(k,n,r){if(!GEN[k])return[];return Array.from({length:n},()=>({...pick(r,GEN[k])(r),subject:"Mathematics"}))}
@@ -596,7 +596,7 @@ function scrambleWords(k){const max=k==="malaika"?8:11;const seen=new Set();
 const ARCADE={
  daudi:["exam","tf","sowhat","scramble","match"],
  levi:["exam","tf","sowhat","scramble","match"],
- malaika:["exam","tf","sowhat","scramble","match"],
+ malaika:["bee","spot","exam","tf","sowhat","scramble","match"],
  israel:["match"]
 };
 const ARCADE_INFO={
@@ -604,7 +604,9 @@ const ARCADE_INFO={
  tf:["✅","True/False blitz","12 quick statements. Is it true or false? Trust your brain."],
  sowhat:["🌍","So What? challenge","You know the answer — now pick why it matters in the real world."],
  scramble:["🔤","Word scramble","Unscramble the key word. The clue is the question."],
- match:["🃏","Memory match","Flip cards and match each question to its answer."]
+ match:["🃏","Memory match","Flip cards and match each question to its answer."],
+ bee:["🐝","Spelling Bee","Hear the word, ask for its meaning, then spell it. Three hives: Busy, Honey and Queen Bee."],
+ spot:["🔍","Spot the spelling","Four spellings, one is right. Can a wordsmith spot it every time?"]
 };
 
 
@@ -909,10 +911,10 @@ function startPlay(kid,subject,mode,pool,label){
  const today=dayStr();const n=mode==="adventure"?ADVENTURE[kid].n:5;
  const prior=of(kid).filter(a=>a.day===today&&a.subject===(subject==="__mix"?"Adventure":subject)).length;
  let qs;
- if(pool){const r=rng(Date.now());qs=shuffle(r,pool).slice(0,label&&label.n||pool.length).map(q=>({...q,subject:q.subject||subject,order:q.order||shuffle(r,[...q.opts.keys()])}))}
+ if(label&&label.fresh){const r=rng(Date.now());qs=label.fresh().map(q=>({...q,subject:q.subject||subject,order:q.order||shuffle(r,[...q.opts.keys()])}))}
+ else if(pool){const r=rng(Date.now());qs=shuffle(r,pool).slice(0,label&&label.n||pool.length).map(q=>({...q,subject:q.subject||subject,order:q.order||shuffle(r,[...q.opts.keys()])}))}
  else qs=buildSet(kid,subject,n,`${kid}|${subject}|${today}|${prior}`);
  PLAY={kid,subject,mode,qs,i:0,score:0,missed:[],answered:false,results:[],label:label&&label.title,pool,poolLabel:label,t0:Date.now(),fresh:label&&label.fresh};
- if(label&&label.fresh)PLAY.qs=label.fresh();
  drawPlay();
 }
 function optLabel(o){if(o.includes("|")){const [e,w]=o.split("|");return`<span class="em">${e}</span>${esc(w)}`}return esc(o)}
@@ -1027,6 +1029,8 @@ function startArcade(k,g){
  if(g==="tf")return startPlay(k,"True/False","tf",[1],{title:"True/False blitz",fresh:()=>buildTF(k)});
  if(g==="sowhat")return startPlay(k,"So What?","sowhat",[1],{title:"So What? challenge",fresh:()=>buildSW(k)});
  if(g==="scramble")return startScramble(k);
+ if(g==="bee")return startBee(k);
+ if(g==="spot")return startPlay(k,"English","spot",[1],{title:"Spot the spelling",fresh:()=>buildSpot(k)});
  if(g==="match")return startMatch(k);
 }
 function overlay(k){let el=$("#play");if(!el){el=document.createElement("div");el.id="play";document.body.appendChild(el)}
@@ -1040,6 +1044,152 @@ async function endGame(k,style,subject,score,total,missed,title,detail,bySubject
  $("#again").onclick=again;$("#home").onclick=closeOverlay;
  await saveAttempt({child:k,subject,mode:style,style,score,total,missed:(missed||[]).slice(0,8),bySubject:bySubject||{[subject]:[score,total]},day:dayStr(),ts:Date.now(),dur:Date.now()-t0});
  const st=$("#savest");if(st)st.textContent=S.mode==="shared"?"Saved to the family record.":"Saved on this device.";
+}
+
+/* ---------- Spelling Bee (Malaika the wordsmith) ---------- */
+const BEE_LEVELS={
+ busy:{name:"Busy Bee",icon:"🐝",sub:"P3 words every wordsmith knows",words:[
+  ["because","for the reason that","I wore my boots because it was raining."],
+  ["friend","a person you like and trust","My friend shared her crayons with me."],
+  ["school","a place where children learn","We sing a song at school every morning."],
+  ["beautiful","very pretty to look at","The sunset was beautiful and orange."],
+  ["people","men, women and children","Many people came to the market."],
+  ["family","parents, children and relatives","My family eats supper together."],
+  ["garden","land where flowers or vegetables grow","Mummy planted tomatoes in the garden."],
+  ["flower","the colourful part of a plant","A bee landed on the yellow flower."],
+  ["rainbow","an arch of colours in the sky","After the rain we saw a rainbow."],
+  ["colour","red, blue and green are each one","Purple is my favourite colour."],
+  ["purple","a colour made by mixing red and blue","The princess wore a purple gown."],
+  ["yellow","the colour of the sun and bananas","She painted the sun yellow."],
+  ["princess","the daughter of a king or queen","The princess lived in a tall castle."],
+  ["castle","a large strong building with towers","The castle had a bridge and a gate."],
+  ["sister","a girl with the same parents as you","My sister helps me tie my shoes."],
+  ["brother","a boy with the same parents as you","My brother loves playing basketball."],
+  ["morning","the early part of the day","I brush my teeth every morning."],
+  ["teacher","a person who helps you learn","Our teacher read us a story."],
+  ["animal","a living thing that can move and breathe","The giraffe is a tall animal."],
+  ["banana","a long yellow fruit","I had a banana for break time."],
+  ["write","to put letters or words on paper","Please write your name at the top."],
+  ["night","the dark time when we sleep","The stars shine at night."],
+  ["again","one more time","Can you read the story again?"],
+  ["happy","feeling glad and joyful","The puppy looked happy to see us."],
+  ["kitchen","the room where food is cooked","Grandma is baking in the kitchen."],
+  ["sugar","a sweet powder used in food","Bees make honey, which is sweeter than sugar."],
+  ["mirror","glass that shows your reflection","She smiled at herself in the mirror."],
+  ["circle","a perfectly round shape","Draw a circle for the sun."]]},
+ honey:{name:"Honey Bee",icon:"🍯",sub:"Tricky words for strong spellers",words:[
+  ["island","land with water all around it","Uganda has many islands on Lake Victoria."],
+  ["February","the second month of the year","My cousin was born in February."],
+  ["Wednesday","the day after Tuesday","We have art on Wednesday."],
+  ["library","a place full of books to borrow","I borrowed three books from the library."],
+  ["believe","to think something is true","I believe I can win the spelling bee."],
+  ["surprise","something you did not expect","The party was a big surprise."],
+  ["special","better or different from usual","Today is a special day."],
+  ["different","not the same","Every snowflake is different."],
+  ["important","mattering a lot","It is important to drink clean water."],
+  ["favourite","the one you like best","Pink is my favourite colour."],
+  ["separate","to keep apart","Separate the red beads from the blue ones."],
+  ["weather","what the sky and air are like today","The weather is sunny and warm."],
+  ["beginning","the start of something","At the beginning of the story, a girl finds a key."],
+  ["thought","an idea in your mind","She had a clever thought."],
+  ["through","in at one side and out at the other","The train went through the tunnel."],
+  ["enough","as much as you need","We have enough chairs for everyone."],
+  ["laugh","to make sounds because something is funny","The clown made us laugh."],
+  ["question","something you ask","She put up her hand to ask a question."],
+  ["ocean","a very large sea","Whales swim in the ocean."],
+  ["giraffe","the tallest animal, with a long neck","A giraffe can eat leaves from tall trees."],
+  ["elephant","a huge grey animal with a trunk","The elephant sprayed water with its trunk."],
+  ["vegetable","a plant we eat, like carrots","Eat a vegetable with every meal."],
+  ["chocolate","a sweet brown food made from cocoa","Uganda grows cocoa for chocolate."],
+  ["calendar","a chart of the days and months","Mark your birthday on the calendar."],
+  ["adventure","an exciting journey or experience","We went on an adventure in the forest."],
+  ["imagine","to make a picture in your mind","Imagine a castle made of clouds."],
+  ["butterfly","an insect with large colourful wings","A butterfly landed on my hand."],
+  ["necklace","jewellery worn around the neck","The queen wore a pearl necklace."]]},
+ queen:{name:"Queen Bee",icon:"👑",sub:"Champion words for real spelling bees",words:[
+  ["necessary","needed; that must be done","Sleep is necessary for a healthy brain."],
+  ["rhythm","a regular beat in music","Clap along to the rhythm of the drum."],
+  ["kaleidoscope","a tube of mirrors that makes colourful patterns","Turn the kaleidoscope to see new patterns."],
+  ["silhouette","a dark shape seen against a light background","We saw the silhouette of a tree at sunset."],
+  ["chrysanthemum","a flower with many thin petals","She picked a golden chrysanthemum."],
+  ["mischievous","playfully naughty","The mischievous monkey stole a banana."],
+  ["millennium","a period of one thousand years","A millennium is ten centuries."],
+  ["embarrass","to make someone feel shy or awkward","Please don't embarrass me in front of my friends."],
+  ["parallel","lines that never meet","Railway tracks are parallel lines."],
+  ["broccoli","a green vegetable like a tiny tree","Broccoli is full of vitamins."],
+  ["guarantee","a promise that something will happen","Practice is the best guarantee of success."],
+  ["restaurant","a place where you buy and eat meals","We ate at a restaurant for her birthday."],
+  ["definitely","certainly, with no doubt","I will definitely finish my homework."],
+  ["occasion","a special event or time","A wedding is a joyful occasion."],
+  ["achievement","something done well through effort","Winning the spelling bee was a great achievement."],
+  ["vacuum","a space with no air in it","There is no air in the vacuum of space."],
+  ["weird","very strange","The cat made a weird noise."],
+  ["hippopotamus","a huge animal that lives near rivers","A hippopotamus can stay underwater for minutes."],
+  ["encyclopaedia","a book or set of books with facts about many things","Look it up in the encyclopaedia."],
+  ["onomatopoeia","a word that sounds like what it means, like buzz","'Buzz' is an example of onomatopoeia."],
+  ["conscience","the inner voice telling right from wrong","Her conscience told her to tell the truth."],
+  ["lightning","a flash of light in a storm","Lightning flashed across the sky."],
+  ["Mediterranean","the sea between Europe and Africa","Egypt has a coast on the Mediterranean Sea."],
+  ["Philippines","a country made of many islands in Asia","The Philippines has over seven thousand islands."],
+  ["exaggerate","to make something sound bigger than it is","Don't exaggerate — it was only a small spider."],
+  ["questionnaire","a list of questions to answer","Fill in the questionnaire about your favourite books."]]}
+};
+function beeSentence(w,s){return s.replace(new RegExp(w,"ig"),"_____")}
+function beeMisspell(word,r){const w=word,out=new Set(),lw=w;
+ const tries=[
+  ()=>lw.replace(/ie/,"ei"),()=>lw.replace(/ei/,"ie"),
+  ()=>lw.replace(/([bcdfglmnprstz])\1/,"$1"),
+  ()=>{const m=[...lw.matchAll(/[bcdfgklmnprst](?=[aeiouy])/g)];if(!m.length)return lw;const x=m[Math.floor(r()*m.length)];return lw.slice(0,x.index)+x[0]+lw.slice(x.index)},
+  ()=>lw.replace(/our/,"or"),()=>lw.replace(/ph/,"f"),()=>lw.replace(/gh/,"f"),()=>lw.replace(/c(?=[ei])/,"s"),()=>lw.replace(/k/,"c"),
+  ()=>lw.replace(/ea/,"ee"),()=>lw.replace(/ou/,"ow"),()=>lw.replace(/y/,"i"),()=>lw.replace(/h(?=[aeiouy])/,""),
+  ()=>{const v="aeiou";const idx=[...lw].map((c,i)=>v.includes(c.toLowerCase())?i:-1).filter(i=>i>0);if(!idx.length)return lw;const i=idx[Math.floor(r()*idx.length)];const nv=v.replace(lw[i].toLowerCase(),"")[Math.floor(r()*4)];return lw.slice(0,i)+nv+lw.slice(i+1)},
+  ()=>{const i=1+Math.floor(r()*(lw.length-2));return lw.slice(0,i)+lw[i+1]+lw[i]+lw.slice(i+2)},
+  ()=>{const i=1+Math.floor(r()*(lw.length-1));return lw.slice(0,i)+lw.slice(i+1)}];
+ for(let n=0;n<80&&out.size<3;n++){const f=tries[Math.floor(r()*tries.length)];const x=f();if(x&&x!==w&&x.length>2&&!out.has(x))out.add(x)}
+ return[...out]}
+function beeAll(){return Object.values(BEE_LEVELS).flatMap(L=>L.words)}
+function buildSpot(k){const r=rng(Date.now());const ws=shuffle(r,beeAll()).slice(0,12);
+ return ws.map(([w,d,s])=>{const wrong=beeMisspell(w,r);while(wrong.length<3)wrong.push(w+"e".repeat(wrong.length+1));
+  return{q:`Which is spelled correctly? (${d})`,opts:[w,...wrong.slice(0,3)],why:`“${w}” — ${s}`,subject:"English",order:shuffle(r,[0,1,2,3])}})}
+function startBee(k){const el=overlay(k);PLAY={kid:k,bee:true};
+ const best=lv=>of(k).filter(a=>a.style==="bee"&&a.level===lv).reduce((m,a)=>Math.max(m,a.score),0);
+ el.innerHTML=`<div class="inner"><div class="play-head"><h2>🐝 Spelling Bee</h2><button class="back" id="quit">✕ Stop</button></div>
+  <div class="qcard"><div class="qtext">Choose your hive, wordsmith.</div><p style="margin-top:-6px">Listen to the word, ask for the meaning or a sentence, then spell it. Ten words a round.</p>
+  <div class="arcade">${Object.entries(BEE_LEVELS).map(([id,L])=>`<button class="game" data-lv="${id}"><span class="gi">${L.icon}</span><span class="gt">${L.name}</span><span class="gs">${esc(L.sub)}</span><span class="gb">${best(id)?`Best: ${best(id)}/10`:"New hive"}</span></button>`).join("")}</div>
+  ${canSpeak()?"":`<p class="tiny" style="margin-top:12px">This gadget can't speak words aloud, so you'll get the meaning and a sentence with a gap instead.</p>`}</div></div>`;
+ $("#quit").onclick=closeOverlay;
+ el.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>runBee(k,b.dataset.lv));
+}
+function runBee(k,lv){const L=BEE_LEVELS[lv];const r=rng(Date.now());const words=shuffle(r,L.words).slice(0,10);
+ const G={kid:k,bee:true,words,i:0,score:0,missed:[],t0:Date.now(),tries:0};PLAY=G;const el=overlay(k);
+ const say=()=>speak(words[G.i][0]);
+ const paint=(fb="")=>{const [w,d,s]=words[G.i];const ok=G.done;
+  el.innerHTML=`<div class="inner"><div class="play-head"><h2>${L.icon} ${L.name}</h2><button class="back" id="quit">✕ Stop</button></div>
+  <div class="qcard"><div class="qnum">Word ${G.i+1} of ${words.length} · 🐝 ${G.score}</div>
+   <div class="row" style="margin:10px 0 14px">${canSpeak()?`<button class="btn" id="hear">🔊 Hear the word</button>`:""}<button class="speak" id="def">📖 Meaning</button><button class="speak" id="sen">💬 Sentence</button></div>
+   <div id="clue" class="fb" style="margin-bottom:12px">${canSpeak()?"Tap 🔊 to hear your word.":`<b>Meaning:</b> ${esc(d)}<br><b>Sentence:</b> ${esc(beeSentence(w,s))}`}</div>
+   <form id="bf" class="row"><input id="bin" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" ${ok?"disabled":""} style="flex:1;min-width:180px;font:inherit;font-family:var(--display);font-size:28px;letter-spacing:.08em;padding:10px 14px;border-radius:14px;border:2px solid var(--w-line);background:var(--w-bg);color:inherit" placeholder="Spell it here"><button class="btn" ${ok?"disabled":""}>Check</button></form>
+   <div id="fb">${fb}</div></div></div>`;
+  $("#quit").onclick=closeOverlay;
+  if($("#hear"))$("#hear").onclick=say;
+  $("#def").onclick=()=>{$("#clue").innerHTML=`<b>Meaning:</b> ${esc(d)}`;speak(d)};
+  $("#sen").onclick=()=>{$("#clue").innerHTML=`<b>Sentence:</b> ${esc(beeSentence(w,s))}`;speak(s)};
+  $("#bf").onsubmit=e=>{e.preventDefault();const g=$("#bin").value.trim();if(!g)return;
+   if(g.toLowerCase()===w.toLowerCase()){if(!G.tries)G.score++;finish(true)}
+   else{G.tries++;if(G.tries<2){paint(`<div class="fb pop"><div class="ok">Not quite — listen again and have one more try.</div></div>`);setTimeout(()=>{const i=$("#bin");if(i)i.focus()},50)}
+    else{G.missed.push(`Spelling: ${w}`);finish(false,g)}}};
+  if(!ok)setTimeout(()=>{const i=$("#bin");if(i)i.focus()},50)};
+ const finish=(right,g)=>{const [w,d,s]=words[G.i];G.done=true;
+  paint(`<div class="fb pop"><div class="ok">${right?(G.tries?"Got it on the second try!":["Bzzz-rilliant!","Perfect spelling, wordsmith!","Queen of words!","Sweet as honey!"][G.i%4]):"Nearly! The word is"}</div>
+   <div class="slots">${w.split("").map(c=>`<span class="slot">${esc(c)}</span>`).join("")}</div>
+   ${!right?`<div class="tiny">You wrote: ${esc(g)}</div>`:""}<div>${esc(s)}</div>
+   <div style="margin-top:10px"><button class="btn" id="next">${G.i+1<words.length?"Next word →":"Finish round"}</button></div></div>`);
+  if(right)speak(w.split("").join(", "));
+  $("#next").onclick=()=>{G.i++;G.tries=0;G.done=false;if(G.i>=words.length)return endBee();paint();setTimeout(say,250)};
+  $("#next").focus()};
+ const endBee=async()=>{await endGame(k,"bee","English",G.score,words.length,G.missed,`Spelling Bee · ${L.name}`,`${L.name}: ${G.score} of ${words.length} spelled right first time.`,{English:[G.score,words.length]},G.t0,()=>runBee(k,lv))};
+ const _save=saveAttempt;saveAttempt=async a=>{saveAttempt=_save;return _save({...a,level:lv})};
+ paint();setTimeout(say,300);
 }
 
 /* ---------- Word scramble ---------- */
