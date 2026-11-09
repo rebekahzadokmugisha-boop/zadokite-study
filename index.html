@@ -1,0 +1,1212 @@
+<!doctype html><html><head><meta charset=utf8><meta name="theme-color" content="#1b2a5c"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Zadokite"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Zadokite Study Tool</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: a family front door → four personal worlds (each with its own look) → a parents' room behind a PIN. */
+:root{
+  --bg:#eef3ef; --fg:#14231d; --muted:#5a6b63; --card:#ffffff; --line:#d5e0d9; --accent:#0e6b5c; --accent-ink:#ffffff;
+  --good:#1f8a4c; --warn:#c77a12; --bad:#c2413b;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1715;--fg:#e4eee9;--muted:#93a69d;--card:#17221f;--line:#2a3a35;--accent:#4cc3a8;--accent-ink:#06211b;--good:#5ccf8c;--warn:#f0b04d;--bad:#ef7b74;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1715;--fg:#e4eee9;--muted:#93a69d;--card:#17221f;--line:#2a3a35;--accent:#4cc3a8;--accent-ink:#06211b;--good:#5ccf8c;--warn:#f0b04d;--bad:#ef7b74;color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.tiny{font-size:13px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:999px;padding:10px 18px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn.ghost{background:transparent;color:inherit;border:2px solid currentColor}
+.status{font-size:13px;color:var(--muted)}
+
+/* ---------- Front door ---------- */
+.door-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.door-head h1{font-size:clamp(34px,6vw,54px);font-weight:800;letter-spacing:-.5px}
+.door-head p{margin:4px 0 0;max-width:52ch}
+.kids{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.kidcard{position:relative;overflow:hidden;border:0;border-radius:22px;padding:20px;min-height:200px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;gap:12px;transition:transform .15s}
+.kidcard:hover{transform:translateY(-3px)}
+.kidcard .nm{font-family:var(--display);font-size:34px;font-weight:800;line-height:1}
+.kidcard .cl{font-size:14px;opacity:.85}
+.kidcard .mini{display:flex;gap:10px;font-size:14px;font-weight:700}
+.kidcard canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.kidcard>*{position:relative}
+.k-daudi{background:#1d1d21;color:#f4efe9;box-shadow:inset 0 0 0 3px #f26b1d}
+.k-levi{background:#0b1030;color:#e9ecff}
+.k-malaika{background:#fff;color:#3a2350;box-shadow:inset 0 0 0 4px #ffd1e3}
+.k-israel{background:#ffd23f;color:#4a2a00}
+.parentlink{margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
+
+/* ---------- Kid worlds (each a deliberate single look) ---------- */
+.world{min-height:100vh}
+.world[data-kid="daudi"]{--w-bg:#17171a;--w-fg:#f4efe9;--w-card:#232327;--w-acc:#f26b1d;--w-acc-ink:#fff;--w-soft:#33241a;--w-line:#3d3d44;color-scheme:dark}
+.world[data-kid="levi"]{--w-bg:#080c26;--w-fg:#e9ecff;--w-card:#141b45;--w-acc:#ffb547;--w-acc-ink:#1b1200;--w-soft:#222b63;--w-line:#2d3878;color-scheme:dark}
+.world[data-kid="malaika"]{--w-bg:#fff6fa;--w-fg:#3a2350;--w-card:#ffffff;--w-acc:#e8357a;--w-acc-ink:#fff;--w-soft:#ffe4ef;--w-line:#f3c6da;color-scheme:light}
+.world[data-kid="israel"]{--w-bg:#fff1c2;--w-fg:#4a2a00;--w-card:#ffffff;--w-acc:#ff6a00;--w-acc-ink:#fff;--w-soft:#ffe28a;--w-line:#f4cf6a;color-scheme:light}
+.world{background:var(--w-bg);color:var(--w-fg);position:relative}
+.world #stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+.world .wrap{position:relative}
+.world .btn{background:var(--w-acc);color:var(--w-acc-ink)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.back{background:transparent;border:2px solid var(--w-line);color:inherit;border-radius:999px;padding:6px 14px;font-weight:700}
+.hello{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end;margin-bottom:20px}
+.hello h1{font-size:clamp(36px,7vw,64px);font-weight:800;letter-spacing:-.5px}
+.hello .sub{font-size:17px;margin-top:4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--w-card);border:2px solid var(--w-line);border-radius:999px;padding:6px 14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bday{border-radius:18px;padding:14px 18px;margin-bottom:16px;font-family:var(--display);font-size:22px;font-weight:700;background:repeating-linear-gradient(45deg,#ff6a00 0 14px,#ff8f33 14px 28px);color:#fff}
+.sect{font-family:var(--display);font-size:24px;font-weight:700;margin:26px 0 10px}
+.quests{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.quest{background:var(--w-card);border:2px solid var(--w-line);border-radius:18px;padding:14px;text-align:left;color:inherit;display:flex;flex-direction:column;gap:6px;min-height:118px;transition:transform .12s}
+.quest:hover{transform:translateY(-2px)}
+.quest .ic{font-size:28px;line-height:1}
+.quest .t{font-family:var(--display);font-size:20px;font-weight:700;line-height:1.1}
+.quest .s{font-size:13px;opacity:.8}
+.quest.done{border-color:var(--w-acc)}
+.quest.done .s{opacity:1;font-weight:700;color:var(--w-acc)}
+.big2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.feature{background:var(--w-card);border:2px solid var(--w-line);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.feature h3{font-size:26px}
+.feature p{margin:0}
+.fact{background:var(--w-soft);border-radius:22px;padding:18px 20px}
+.fact b{font-family:var(--display);font-size:18px}
+.world[data-kid="malaika"] .quest,.world[data-kid="malaika"] .feature{background-image:repeating-linear-gradient(-35deg,rgba(232,53,122,.05) 0 2px,transparent 2px 7px)}
+.world[data-kid="malaika"] .hello h1{background:linear-gradient(90deg,#e53935,#fb8c00,#fdd835,#43a047,#1e88e5,#3949ab,#8e24aa);-webkit-background-clip:text;background-clip:text;color:transparent}
+.world[data-kid="malaika"] .hello h1::after{content:" 👑";-webkit-text-fill-color:initial;color:initial}
+.world[data-kid="malaika"] .sect::before{content:"✦ ";color:#e8357a}
+.world[data-kid="daudi"] .sect{text-transform:uppercase;letter-spacing:.06em;font-size:20px}
+.world[data-kid="daudi"] .quest.done{box-shadow:inset 0 -4px 0 #f26b1d}
+.torah{border-radius:22px;padding:18px 20px;margin-top:14px;border:2px solid var(--w-line);background:var(--w-card)}
+.torah b{font-family:var(--display);font-size:18px}
+.world[data-kid="israel"] .quest{border-radius:28px;min-height:140px;align-items:center;text-align:center;justify-content:center}
+.world[data-kid="israel"] .quest .ic{font-size:44px}
+
+/* ---------- Play overlay ---------- */
+.play{position:fixed;inset:0;z-index:40;overflow:auto;background:var(--w-bg);color:var(--w-fg);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.play .inner{max-width:760px;margin:0 auto;padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));position:relative}
+.play-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.play-head h2{font-size:24px}
+.vis{background:var(--w-card);border:2px solid var(--w-line);border-radius:20px;padding:8px;margin-bottom:14px}
+.vis svg{display:block;width:100%;height:auto}
+.qcard{background:var(--w-card);border:2px solid var(--w-line);border-radius:22px;padding:20px}
+.qnum{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.qtext{font-family:var(--display);font-size:clamp(22px,4vw,30px);font-weight:700;line-height:1.2;margin:6px 0 14px}
+.qshow{font-size:44px;line-height:1.3;margin:-4px 0 14px;word-break:break-word}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt{border:2px solid var(--w-line);background:var(--w-bg);color:inherit;border-radius:16px;padding:14px;font-size:18px;font-weight:700;text-align:left;min-height:58px}
+.opt:hover:not([disabled]){border-color:var(--w-acc)}
+.opt.right{background:#2aa35a;border-color:#2aa35a;color:#fff}
+.opt.wrong{background:#d9534f;border-color:#d9534f;color:#fff}
+.opt[disabled]{cursor:default}
+.world[data-kid="israel"] .opt,.play[data-kid="israel"] .opt{text-align:center;font-size:22px;min-height:96px}
+.opt .em{display:block;font-size:46px;line-height:1.1}
+.fb{margin-top:14px;border-radius:16px;padding:14px 16px;background:var(--w-soft)}
+.fb .ok{font-family:var(--display);font-size:22px;font-weight:800}
+.sowhat{margin-top:8px;border-top:2px dashed var(--w-line);padding-top:8px}
+.sowhat b{font-family:var(--display)}
+.timer{font-family:var(--display);font-size:30px;font-weight:800;font-variant-numeric:tabular-nums}
+.speak{background:var(--w-soft);border:0;border-radius:999px;padding:6px 12px;color:inherit;font-weight:700}
+.result{text-align:center;padding:10px 0}
+.result .big{font-family:var(--display);font-size:64px;font-weight:800;line-height:1}
+.swatch{width:120px;height:120px;border-radius:50%;margin:0 auto 14px;border:4px solid rgba(0,0,0,.12)}
+.shape{display:block;margin:0 auto 14px}
+
+/* ---------- Arcade ---------- */
+.arcade{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.game{background:var(--w-card);border:2px solid var(--w-line);border-radius:20px;padding:16px;text-align:left;color:inherit;display:flex;flex-direction:column;gap:6px;transition:transform .12s}
+.game:hover{transform:translateY(-2px);border-color:var(--w-acc)}
+.game .gi{font-size:30px;line-height:1}
+.game .gt{font-family:var(--display);font-size:21px;font-weight:700;line-height:1.1}
+.game .gs{font-size:13px;opacity:.85}
+.game .gb{font-size:12px;font-weight:700;color:var(--w-acc)}
+.slots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0}
+.slot{width:40px;height:48px;border-radius:10px;border-bottom:4px solid var(--w-acc);background:var(--w-soft);display:grid;place-items:center;font-family:var(--display);font-size:26px;font-weight:800;text-transform:uppercase}
+.tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{width:48px;height:52px;border-radius:12px;border:2px solid var(--w-line);background:var(--w-bg);color:inherit;font-family:var(--display);font-size:26px;font-weight:800;text-transform:uppercase}
+.tile[disabled]{opacity:.25}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media (min-width:600px){.mgrid{grid-template-columns:repeat(4,1fr)}}
+.mcard{min-height:92px;border-radius:14px;border:2px solid var(--w-line);background:var(--w-acc);color:var(--w-acc-ink);font-weight:700;font-size:13px;line-height:1.25;padding:8px;display:grid;place-items:center;text-align:center;word-break:break-word}
+.mcard.up{background:var(--w-card);color:var(--w-fg)}
+.mcard.got{background:#2aa35a;border-color:#2aa35a;color:#fff}
+.mcard .em{font-size:40px}
+.styles{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.styles td,.styles th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left}
+.styles th{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+/* ---------- Parents' room ---------- */
+.pr-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.pr-head h1{font-size:clamp(30px,5vw,44px);font-weight:800}
+.lock{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.lock input,.set input{font:inherit;font-size:20px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--fg);width:100%}
+.err{color:var(--bad);font-weight:700;min-height:1.4em}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.pcard .who{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pcard .who h2{font-size:26px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:1px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpi{background:var(--bg);border-radius:12px;padding:8px 10px}
+.kpi .v{font-family:var(--display);font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .l{font-size:12px;color:var(--muted)}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.subj{display:grid;grid-template-columns:110px 1fr 46px;gap:8px;align-items:center;font-size:14px}
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700}
+.p-good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.p-warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.p-bad{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.p-none{background:var(--bg);color:var(--muted)}
+.todo{display:flex;flex-wrap:wrap;gap:6px}
+.miss{margin:0;padding-left:18px;font-size:14px}
+.miss li{margin:2px 0}
+.ple{background:var(--bg);border-radius:14px;padding:12px}
+.ple .g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;text-align:center}
+.ple .g div{background:var(--card);border-radius:10px;padding:6px 4px;font-size:12px}
+.ple .g b{display:block;font-family:var(--display);font-size:20px}
+.set{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}
+.set label{font-size:13px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.feed{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 18px;margin-top:18px}
+.feed table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.feed td,.feed th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+.feedwrap{overflow-x:auto}
+@media (max-width:560px){.opts{grid-template-columns:1fr}.hello{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.pop{animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+</style>
+
+<div id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* =========================================================
+   FAMILY
+   ========================================================= */
+const KIDS = {
+  daudi:   {name:"Daudi",   age:13, cls:"Senior 1 · King's College Budo", theme:"Court & Garage — hoops, horsepower and science", color:"#f26b1d", ple:false},
+  levi:    {name:"Levi",    age:11, cls:"Primary 5 · Clarke Junior",      theme:"Space & speed commander", color:"#3949ab", ple:true, pleYear:2028},
+  malaika: {name:"Malaika", age:8,  cls:"Primary 3 · Clarke Junior",      theme:"Rainbow Princess",  color:"#e8357a", ple:true, pleYear:2030},
+  israel:  {name:"Israel",  age:3,  cls:"Montessori · ages 3–6",          theme:"Sunny garden",    color:"#ff8a00", ple:false, birthday:"2026-11-12", turning:4}
+};
+const ORDER = ["daudi","levi","malaika","israel"];
+
+/* =========================================================
+   QUESTION BANKS  —  [question, correct, wrong, wrong, wrong, why, soWhat]
+   ========================================================= */
+const B = (q,a,b,c,d,why,w)=>({q,opts:[a,b,c,d],why,w});
+
+const BANK = {
+/* ---------------- DAUDI · S1 (new lower secondary curriculum) ---------------- */
+daudi:{
+ Biology:[
+  B("What is the basic unit of life?","The cell","The tissue","The organ","The atom","Every living thing is built from cells; tissues and organs are groups of cells.","Doctors diagnose malaria, sickle cell and cancer by looking at cells under a microscope."),
+  B("Which part of a plant cell carries out photosynthesis?","Chloroplast","Mitochondrion","Nucleus","Cell membrane","Chloroplasts hold chlorophyll, which traps sunlight to make food.","Every matooke, bean and blade of grass in Uganda starts as sunlight caught in chloroplasts."),
+  B("Which structure does a plant cell have that an animal cell lacks?","Cell wall","Nucleus","Cytoplasm","Cell membrane","The cellulose cell wall gives plants their stiffness.","Cellulose from cell walls becomes paper, cotton cloth and the fibre in your food."),
+  B("Getting rid of waste made by the body's chemical reactions is called…","Excretion","Egestion","Secretion","Respiration","Egestion removes undigested food; excretion removes metabolic waste like urea and CO₂.","Kidney machines (dialysis) do excretion for people whose kidneys fail."),
+  B("Who created the two-name (binomial) system for naming living things?","Carl Linnaeus","Charles Darwin","Robert Hooke","Louis Pasteur","Linnaeus named species with genus + species, e.g. Homo sapiens.","Scientists in Brazil, Japan and Uganda all mean the same animal when they write Gorilla beringei."),
+  B("How many legs does an adult insect have?","Six","Eight","Four","Ten","Insects have 3 body parts and 6 jointed legs; spiders have 8 and are not insects.","Insects pollinate about a third of the food we eat — coffee farmers in Uganda depend on bees."),
+  B("Which insect spreads malaria?","Female Anopheles mosquito","Housefly","Tsetse fly","Male Culex mosquito","Only the female Anopheles feeds on blood and carries Plasmodium.","Knowing which insect spreads it is why bed nets and draining stagnant water save lives."),
+  B("Which part of a flower makes pollen?","Anther","Stigma","Ovary","Sepal","The anther (on the filament) makes pollen; the stigma receives it.","Plant breeders at NARO move pollen by hand to create disease-resistant bananas."),
+  B("Which instrument part holds the glass slide on a microscope?","Stage","Eyepiece","Mirror","Coarse focus knob","The slide sits on the stage, held by clips.","Lab technicians use this every day to count blood cells in hospitals.")
+ ],
+ Chemistry:[
+  B("How would you get salt back from salty water?","Evaporation","Filtration","Decanting","Sieving","Dissolved salt passes through a filter; heating evaporates the water and leaves the salt.","This is how salt is harvested at Lake Katwe in western Uganda."),
+  B("Which gas makes up about 78% of air?","Nitrogen","Oxygen","Carbon dioxide","Argon","Air is about 78% nitrogen and 21% oxygen.","Farmers grow beans partly because their root nodules turn air's nitrogen into natural fertiliser."),
+  B("A solid turning straight into a gas is called…","Sublimation","Evaporation","Condensation","Melting","Sublimation skips the liquid stage, e.g. dry ice or iodine crystals.","Freeze-dried coffee and some vaccines are preserved using sublimation."),
+  B("Which method separates the colours in black ink?","Chromatography","Distillation","Filtration","Evaporation","Different dyes travel up the paper at different speeds.","Forensic scientists use chromatography to test for drugs and poisons."),
+  B("A solution with pH 7 is…","Neutral","Strongly acidic","Weakly acidic","Alkaline","Below 7 is acidic, above 7 is alkaline, 7 is neutral like pure water.","Farmers test soil pH before planting; tea grows best in acidic soil."),
+  B("What two things must be present for iron to rust?","Water and oxygen","Salt and heat","Sunlight and air","Oil and water","Iron + oxygen + water forms hydrated iron oxide (rust).","Painting and galvanising iron roofs (mabaati) keeps out water and oxygen."),
+  B("What is the chemical symbol for sodium?","Na","S","So","Sd","Na comes from its Latin name, natrium.","Every periodic table in the world uses the same symbols — a universal language."),
+  B("Which is a compound, not an element?","Water","Oxygen","Iron","Carbon","Water (H₂O) is two elements chemically joined.","Knowing compounds lets engineers turn sand (silicon dioxide) into computer chips.")
+ ],
+ Physics:[
+  B("What is the SI unit of mass?","Kilogram","Gram","Newton","Pound","The kilogram is the base SI unit of mass.","Every scale in every market, from Owino to Tokyo, is calibrated to the kilogram."),
+  B("A stone has mass 200 g and volume 50 cm³. What is its density?","4 g/cm³","10 g/cm³","250 g/cm³","0.25 g/cm³","Density = mass ÷ volume = 200 ÷ 50 = 4 g/cm³.","Gold buyers check density to spot fake gold bars."),
+  B("Which instrument measures the diameter of a thin wire most accurately?","Micrometer screw gauge","Metre rule","Tape measure","Measuring cylinder","It reads to 0.01 mm.","Engineers building bridges and engines measure parts this precisely."),
+  B("What is the SI unit of force?","Newton","Joule","Watt","Kilogram","Named after Isaac Newton; 1 N accelerates 1 kg by 1 m/s².","Rocket engineers calculate thrust in newtons."),
+  B("Heat travels from the Sun to Earth mainly by…","Radiation","Conduction","Convection","Evaporation","Space is a vacuum, so only radiation can cross it.","Solar panels on Ugandan rooftops catch this radiated energy."),
+  B("Why are gaps left between rails on a railway line?","To allow expansion when hot","To save metal","To drain water","To make trains quieter","Metals expand when heated; without gaps rails would buckle.","The new Standard Gauge Railway engineers plan for this in Uganda's heat."),
+  B("When light hits a flat mirror, the angle of reflection is…","Equal to the angle of incidence","Always 90°","Double the angle of incidence","Zero","Law of reflection: angle i = angle r.","Periscopes and car mirrors are designed with this law."),
+  B("The boiling point of pure water at sea level is…","100 °C","0 °C","37 °C","212 °C","100 °C at standard pressure; it is slightly lower on high ground.","On Mt Elgon water boils below 100 °C, so beans take longer to cook.")
+ ],
+ Geography:[
+  B("Which is the largest lake in Africa?","Lake Victoria","Lake Tanganyika","Lake Albert","Lake Kyoga","Lake Victoria (about 68,800 km²) is shared by Uganda, Kenya and Tanzania.","Millions of people depend on it for fish, transport and electricity."),
+  B("Which is the highest peak in Uganda?","Margherita Peak (Mt Stanley)","Mt Elgon","Mt Moroto","Mt Muhavura","Margherita Peak on the Rwenzori reaches about 5,109 m.","Its glaciers are shrinking fast — a live lesson on climate change."),
+  B("The River Nile leaves Lake Victoria at…","Jinja","Entebbe","Masaka","Kasese","The source of the Nile is at Jinja.","The Nile flows over 6,600 km to the Mediterranean, linking 11 countries."),
+  B("On a map with scale 1:50,000, 1 cm represents…","500 m","50 m","5 km","50 km","50,000 cm = 500 m.","Surveyors use scales like this to plan roads and land titles."),
+  B("Which direction is exactly opposite north-east?","South-west","South-east","North-west","West","Opposite directions are 180° apart.","Pilots and ship captains navigate with these bearings."),
+  B("Which country borders Uganda to the west?","DR Congo","Kenya","Tanzania","South Sudan","Kenya is east, Tanzania south, South Sudan north.","Trade across these borders shapes prices in Kampala markets."),
+  B("Which instrument measures rainfall?","Rain gauge","Barometer","Thermometer","Anemometer","A barometer measures pressure; an anemometer measures wind speed.","Farmers and UNMA use rainfall records to plan planting seasons."),
+  B("The Equator passes through which Ugandan district on the Kampala–Masaka road?","Mpigi","Wakiso","Gulu","Mbale","Tourists stop at the Equator line at Kayabwe, Mpigi.","On the Equator, day and night are about 12 hours each all year.")
+ ],
+ History:[
+  B("The study of the past using objects dug from the ground is called…","Archaeology","Anthropology","Geology","Oral tradition","Archaeologists study tools, bones and remains.","Archaeology at Olduvai and Nsongezi shows East Africa as a cradle of humankind."),
+  B("Information passed from elders by word of mouth is called…","Oral tradition","Archaeology","Written records","Linguistics","Stories, songs and proverbs carry history across generations.","Your grandparents' stories are real historical sources — record them!"),
+  B("Uganda became independent on…","9 October 1962","1 January 1960","9 December 1961","26 January 1986","Uganda gained independence from Britain on 9 October 1962.","Independence Day reminds us that citizens shape their country's future."),
+  B("King's College Budo is beside Naggalabi, a site famous for…","The crowning of Kabakas","A Stone Age factory","The first railway station","A colonial fort","Buganda's kings were traditionally crowned at Naggalabi-Buddo.","Your school stands on living history — leaders were made on that hill."),
+  B("Which kingdom is ruled by the Kabaka?","Buganda","Bunyoro","Toro","Ankole","Bunyoro's king is the Omukama, Ankole's was the Omugabe.","Cultural institutions still shape language, land and identity today."),
+  B("Nsongezi in Uganda is an important site for…","Stone Age tools","Colonial treaties","Coffee research","Gold mining","Stone tools found there show early people lived in Uganda long ago.","Studying early technology shows how humans have always innovated."),
+  B("The Luo are believed to have migrated from…","Bahr-el-Ghazal","Congo forests","The Ethiopian highlands only","The Kenyan coast","Most accounts trace Luo origins to Bahr-el-Ghazal in South Sudan.","Migration explains why languages and customs are shared across borders.")
+ ],
+ English:[
+  B("Choose the correct sentence.","Neither of the boys is ready.","Neither of the boys are ready.","Neither of the boy is ready.","Neither of the boys be ready.","'Neither' is singular, so it takes 'is'.","Clear grammar makes your ideas trusted in exams, interviews and emails."),
+  B("'As brave as a lion' is an example of…","A simile","A metaphor","Personification","Alliteration","A simile compares using 'as' or 'like'.","Great speeches use similes to make ideas stick."),
+  B("What is a synonym of 'enormous'?","Huge","Tiny","Loud","Ancient","Synonyms have similar meanings.","A wide vocabulary lets you say exactly what you mean."),
+  B("What is the past tense of 'teach'?","Taught","Teached","Thought","Teaching","'Teach' is irregular: teach – taught – taught.","Irregular verbs are some of the most-used words in English."),
+  B("Which word is an adverb in: 'She ran quickly to the gate'?","Quickly","Ran","Gate","She","Adverbs describe verbs; many end in -ly.","Precise description is the heart of good storytelling and reporting."),
+  B("What is the antonym of 'generous'?","Mean","Kind","Wealthy","Giving","Antonyms are opposites.","Knowing opposites sharpens arguments in debate."),
+  B("Which is a complex sentence?","Although it rained, we played.","We played.","We played and laughed.","Play now!","A complex sentence has a dependent clause.","Complex sentences show how ideas connect — the mark of strong writing.")
+ ],
+ ICT:[
+  B("Which part is called the 'brain' of a computer?","CPU","Monitor","Keyboard","Hard disk","The Central Processing Unit carries out instructions.","Phones, cars and ATMs all have CPUs."),
+  B("Which memory is lost when the power goes off?","RAM","ROM","Hard disk","Flash disk","RAM is volatile, temporary memory.","That's why you save your work before load-shedding hits!"),
+  B("How many bits are in one byte?","8","2","10","16","1 byte = 8 bits.","One text character is about one byte; a photo is millions."),
+  B("Which is the strongest password?","Budo#2026!rain","password","123456","daudi","Strong passwords mix upper/lower case, numbers and symbols.","Strong passwords protect bank accounts and identities."),
+  B("Which of these is an input device?","Keyboard","Printer","Speaker","Monitor","Input devices send data into the computer.","Every app you'll ever build starts by handling input."),
+  B("Which of these is an operating system?","Linux","Microsoft Word","Google Chrome","A printer","An OS manages the whole computer; Word and Chrome are applications.","Android, a version of Linux, runs most phones in Africa.")
+ ]
+},
+/* ---------------- LEVI · P5 (NCDC primary) ---------------- */
+levi:{
+ Science:[
+  B("Which teeth tear meat?","Canines","Incisors","Molars","Premolars","Canines are pointed for tearing; incisors cut; molars grind.","A lion's huge canines tell scientists it's a meat-eater."),
+  B("Where does digestion begin?","In the mouth","In the stomach","In the small intestine","In the large intestine","Chewing and saliva start digestion in the mouth.","Astronauts must chew carefully too — food digestion works the same in space!"),
+  B("Immunisation protects children against…","Killer diseases like measles and polio","All accidents","Hunger","Tooth decay","Vaccines teach the body to fight specific germs.","Polio has almost disappeared worldwide because of immunisation."),
+  B("Which food group helps the body grow and repair?","Proteins","Carbohydrates","Fats","Water","Beans, fish, eggs and meat are body-building foods.","Astronauts lose muscle in space, so their meals are planned for protein."),
+  B("Which type of soil holds the most water?","Clay soil","Sandy soil","Loam soil","Gravel","Clay has tiny particles with small spaces that hold water.","Engineers on Mars study soil to see if it can hold water for crops."),
+  B("Heat travels through a metal spoon by…","Conduction","Convection","Radiation","Reflection","Heat passes from particle to particle in solids.","Spacecraft use special tiles that stop heat conducting inside."),
+  B("Which living things help make bread rise?","Yeast (a fungus)","Bacteria that cause cholera","Mosquitoes","Algae","Yeast gives off carbon dioxide that makes dough rise.","Tiny fungi are used in medicine — penicillin came from a mould."),
+  B("Which is a primary health care practice?","Boiling drinking water","Eating sweets daily","Sleeping in dirty clothes","Keeping stagnant water","PHC is about simple, affordable ways to stay healthy.","On the International Space Station, astronauts recycle and purify all their water."),
+  B("Why do farmers practise crop rotation?","To keep soil fertile","To make crops taste sweet","To use more land","To grow fewer crops","Different crops use different nutrients; rotation rests the soil.","Feeding 8 billion people depends on healthy soil.")
+ ],
+ SST:[
+  B("Uganda has no coastline. A country like this is called…","Landlocked","An island","Coastal","A peninsula","Uganda has no direct access to the sea.","That's why Uganda's goods travel to the port of Mombasa by road and rail."),
+  B("How many countries share a border with Uganda?","5","3","4","7","Kenya, Tanzania, Rwanda, DR Congo and South Sudan.","Good relations with neighbours mean trade, peace and shared lakes."),
+  B("Which lake does Uganda share with Kenya and Tanzania?","Lake Victoria","Lake Albert","Lake Edward","Lake Kyoga","Lake Kyoga is entirely in Uganda.","Lake Victoria is so big that astronauts can see it clearly from space."),
+  B("Which national park is home to mountain gorillas?","Bwindi Impenetrable","Murchison Falls","Queen Elizabeth","Lake Mburo","Bwindi holds about half of the world's mountain gorillas.","Gorilla tourism brings money that pays for schools and clinics nearby."),
+  B("Mabira forest is an example of…","Tropical rainforest","Savannah grassland","Semi-desert","Swamp","It is a thick, evergreen forest.","Forests act like Earth's lungs, cleaning the air we breathe."),
+  B("Uganda's nearest seaport is…","Mombasa","Dar es Salaam","Cape Town","Lagos","Mombasa in Kenya is the main route to the sea.","Ships from Mombasa bring cars, phones and medicines to Uganda."),
+  B("Which line of latitude passes through Uganda?","The Equator","The Tropic of Cancer","The Prime Meridian","The Tropic of Capricorn","The Equator (0°) crosses Uganda.","Rockets are often launched near the Equator because Earth's spin gives them a boost!"),
+  B("The Baganda, Basoga and Banyankole belong to which group?","Bantu","Nilotics","Nilo-Hamites","Hamites","They speak Bantu languages.","Languages connect people across many African countries.")
+ ],
+ English:[
+  B("What is the plural of 'mouse'?","Mice","Mouses","Meese","Mousies","Some plurals are irregular.","Computer 'mice' borrowed their name from the animal!"),
+  B("'She ___ to school every day.'","goes","go","going","gone","Use 'goes' with she/he/it in the present simple.","Clear sentences help you explain big ideas — like how rockets work."),
+  B("What is the comparative of 'good'?","Better","Gooder","Best","More good","good – better – best.","Scientists always compare: is this rocket better than the last?"),
+  B("Choose the question tag: 'You are coming, ___?'","aren't you","isn't it","are you","don't you","A positive statement takes a negative tag.","Polite questions help you lead a team."),
+  B("Which word is a noun?","Happiness","Happy","Happily","Happen","Nouns name things, including feelings.","Naming things clearly is how scientists name new stars."),
+  B("What is the opposite of 'ancient'?","Modern","Old","Huge","Dirty","Ancient means very old; modern means new.","Telescopes see ancient light from stars that left them long ago.")
+ ],
+ Space:[
+  B("What is the closest star to Earth?","The Sun","The Moon","Mars","The North Star","The Sun is a star; the Moon and Mars are not stars.","All energy in our food began as sunlight."),
+  B("Which planet is known as the Red Planet?","Mars","Venus","Jupiter","Mercury","Iron oxide (rust) in its soil makes Mars red.","Rovers are searching Mars for signs of ancient life right now."),
+  B("Which is the largest planet in our solar system?","Jupiter","Saturn","Earth","Neptune","Over 1,300 Earths could fit inside Jupiter.","Jupiter's gravity helps protect Earth by pulling in some comets."),
+  B("How long does Earth take to spin once on its axis?","About 24 hours","About 365 days","About 7 days","About 30 days","One spin = one day and night.","Time zones exist because Earth spins — it's morning in Kampala while night in Los Angeles."),
+  B("How long does Earth take to go round the Sun?","About 365¼ days","24 hours","30 days","10 years","That's why we add a leap day every 4 years.","Calendars, harvest seasons and birthdays all follow this orbit."),
+  B("Who was the first person to walk on the Moon (1969)?","Neil Armstrong","Yuri Gagarin","Buzz Lightyear","Isaac Newton","Gagarin was first in space (1961); Armstrong first on the Moon.","Ideas born in space missions gave us GPS and better weather forecasts."),
+  B("Uganda's first satellite, launched in 2022, was called…","PearlAfricaSat-1","Kampala-1","NileSat","Victoria One","It was built by Ugandan engineers and launched to the space station.","Ugandans are already working in space — you could be next!"),
+  B("Which planet has the most famous bright rings?","Saturn","Mars","Mercury","Venus","Saturn's rings are made of ice and rock.","Studying rings helps scientists understand how planets form.")
+ ]
+},
+/* ---------------- MALAIKA · P3 (thematic curriculum) ---------------- */
+malaika:{
+ English:[
+  B("What is the plural of 'box'?","boxes","boxs","boxies","box","Words ending in x add -es.","Shops count boxes every day to know what to sell."),
+  B("What is the opposite of 'big'?","small","tall","fat","long","Opposites mean the very different thing.","Artists use big and small shapes to make pictures exciting."),
+  B("'___ orange' — which word fits?","an","a","the two","many","Use 'an' before a vowel sound: a, e, i, o, u.","Good English helps you write stories people love."),
+  B("Which word rhymes with 'cat'?","hat","dog","cup","sun","Rhyming words end with the same sound.","Songs and poems use rhymes to be easy to remember."),
+  B("Which name needs a capital letter?","kampala","house","tree","river","Names of places start with a capital letter: Kampala.","Capitals help readers spot names on maps and signs."),
+  B("'I ___ eight years old.'","am","is","are","be","Use 'am' with I.","Introducing yourself well makes new friends!"),
+  B("Which word means a young cat?","kitten","puppy","calf","chick","A puppy is a young dog, a calf a young cow, a chick a young hen.","Farmers and vets use these words every day.")
+ ],
+ Literacy:[
+  B("Which animal gives us milk?","Cow","Hen","Dog","Fish","Cows (and goats) give milk.","Milk helps build strong bones and teeth."),
+  B("Why do we wash our hands with soap?","To remove germs","To make them colourful","To make them grow","To dry them","Soap removes germs that make us sick.","Washing hands stops diseases like cholera and diarrhoea."),
+  B("What do plants need to grow?","Sunlight, water and air","Sweets and soda","Darkness only","Sand and plastic","Plants make their food using sunlight, water and air.","All the food we eat starts with a plant!"),
+  B("Which insect makes honey?","Bee","Ant","Housefly","Mosquito","Bees collect nectar from flowers and make honey.","Bees help flowers make fruits like mangoes and passion fruits."),
+  B("A rainbow appears when…","Sunlight shines through raindrops","The moon is full","It is very windy","It is night","Raindrops split sunlight into colours.","Scientists use the same idea in glass prisms."),
+  B("What does a red traffic light mean?","Stop","Go","Go faster","Turn around","Red means stop, green means go.","Road rules keep everyone safe on Kampala roads."),
+  B("Which is a good way to keep our environment clean?","Put rubbish in a bin","Throw papers on the road","Burn plastics at home","Block drainage channels","Bins keep litter away from drains.","Clean drains stop flooding when heavy rain comes."),
+  B("Which of these is a wild animal?","Lion","Goat","Cow","Dog","Wild animals live freely in the bush and parks.","Uganda's parks protect lions, elephants and gorillas.")
+ ],
+ Colours:[
+  B("Red + yellow makes…","Orange","Green","Purple","Brown","Mixing two primary colours gives a secondary colour.","Painters mix colours to show sunsets."),
+  B("Blue + yellow makes…","Green","Orange","Pink","Grey","Blue and yellow mix to green.","Most leaves are green — nature's favourite colour!"),
+  B("Red + blue makes…","Purple","Orange","Green","Yellow","Red and blue mix to purple (violet).","Purple was once a colour only kings could wear!"),
+  B("Adding black to a colour makes a…","Shade (darker)","Tint (lighter)","New primary colour","Rainbow","Shading means making a colour darker.","Artists shade to make drawings look round and real."),
+  B("Adding white to a colour makes a…","Tint (lighter)","Shade (darker)","Black","Brown","White makes a colour lighter, like pink from red.","Soft tints make bedrooms feel calm."),
+  B("How many colours are in a rainbow?","7","3","5","10","Red, orange, yellow, green, blue, indigo, violet.","Remember them with ROY G BIV!"),
+  B("Which colour is at the TOP of a rainbow?","Red","Violet","Green","Blue","Red is on the outside top edge.","Rainbows always keep the same order — it's science!")
+ ]
+}
+};
+
+const NATURE = [
+ "A single mango tree can feed families for 100 years.",
+ "Mountain gorillas share about 98% of their DNA with humans.",
+ "The shoebill stork in Uganda's swamps can stand still for hours to catch a fish.",
+ "Lake Victoria is so big it makes its own weather — thunderstorms form over it at night.",
+ "Bees visit about 2 million flowers to make one jar of honey.",
+ "Trees talk to each other through fungi under the soil.",
+ "Butterflies taste with their feet.",
+ "The Rwenzori Mountains have glaciers right near the Equator.",
+ "An elephant's trunk has about 40,000 muscles.",
+ "Chameleons change colour to show their mood and control temperature.",
+ "Light from the Sun takes about 8 minutes to reach Earth.",
+ "Uganda has over 1,000 species of birds — more than all of Europe.",
+ "Earthworms make soil richer by mixing air and leaves into it.",
+ "Some bamboo can grow almost a metre in a single day."
+];
+
+/* =========================================================
+   RANDOM + GENERATORS
+   ========================================================= */
+function hash(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed>>>0;return()=>{a+=0x6D2B79F5;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const ri=(r,a,b)=>a+Math.floor(r()*(b-a+1));
+const pick=(r,arr)=>arr[Math.floor(r()*arr.length)];
+function shuffle(r,arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function numOpts(r,ans,spread){const s=new Set([ans]);let g=0;while(s.size<4&&g<60){g++;const d=ri(r,-spread,spread);if(d!==0)s.add(ans+d)}let k=1;while(s.size<4)s.add(ans+spread+k++);return [...s].map(String)}
+function M(q,ans,wrongs,why,w){const A=String(ans),set=[A];for(const x of wrongs){const v=String(x);if(!set.includes(v)&&set.length<4)set.push(v)}
+ const m=A.match(/^(.*?)(-?[\d,]+)(.*)$/);let k=1;while(set.length<4&&k<60){let c;if(m){const n=+m[2].replace(/,/g,"");const v=n+(k%2?1:-1)*Math.ceil(k/2)*(n>=100?10:1);c=v>0||n<=0?m[1]+(m[2].includes(",")?fmt(v):v)+m[3]:null}else c=A+" ".repeat(k);if(c&&!set.includes(c))set.push(c);k++}
+ return{q,opts:set,why,w}}
+const fmt=n=>n.toLocaleString("en-US");
+
+const GEN = {
+ daudi:[
+  r=>{const a=ri(r,-15,15),b=ri(r,-15,15),ans=a+b;return M(`(${a}) + (${b}) = ?`,ans,numOpts(r,ans,6).slice(1),"Same signs add and keep the sign; different signs subtract and take the sign of the bigger number.","Temperatures below zero and bank overdrafts are both negative numbers.")},
+  r=>{const x=ri(r,2,12),a=ri(r,2,9),b=ri(r,1,20),c=a*x+b;return M(`Solve: ${a}x + ${b} = ${c}`,x,numOpts(r,x,4).slice(1),`Subtract ${b}: ${a}x = ${c-b}. Divide by ${a}: x = ${x}.`,"Engineers and economists solve equations like this to find unknown costs or loads.")},
+  r=>{const n=ri(r,5,31),ans=n.toString(2);const w=new Set();while(w.size<3){const m=n+ri(r,-4,4);if(m>0&&m!==n)w.add(m.toString(2))}return M(`Write ${n} in base 2`,ans,[...w],`Divide by 2 repeatedly and read the remainders upward: ${ans}₂.`,"Every photo, song and message on a phone is stored in base 2.")},
+  r=>{const p=pick(r,[10,15,20,25,40,75]),n=ri(r,2,20)*20,ans=p*n/100;return M(`What is ${p}% of ${n}?`,ans,numOpts(r,ans,Math.max(5,ans/3|0)).slice(1),`${p}/100 × ${n} = ${ans}.`,"Discounts, school fees increases and interest rates are all percentages.")},
+  r=>{const a=ri(r,25,155),ans=180-a;return M(`Angles on a straight line: one is ${a}°. Find the other.`,ans,numOpts(r,ans,15).slice(1),`Angles on a straight line add to 180°: 180 − ${a} = ${ans}°.`,"Carpenters and architects use this to fit roof trusses.")},
+  r=>{const g=pick(r,[2,3,4,5,6,8]),a=g*ri(r,2,9),b=g*ri(r,2,9);const gcd=(x,y)=>y?gcd(y,x%y):x;const ans=gcd(a,b);return M(`HCF of ${a} and ${b}?`,ans,numOpts(r,ans,3).filter(x=>+x>0).slice(1).concat(["1"]),`List common factors; the highest is ${ans}.`,"HCF helps share things into the biggest equal groups — like packing goods into crates.")},
+  r=>{const n=ri(r,1,4),d=pick(r,[3,4,5,8]),m=ri(r,1,d-1);const top=n*d+m;return M(`Write ${n} ${m}/${d} as an improper fraction`,`${top}/${d}`,[`${n*m}/${d}`,`${top}/${m}`,`${n+m}/${d}`],`${n} × ${d} + ${m} = ${top}, over ${d}.`,"Recipes and building plans switch between mixed and improper fractions.")}
+ ],
+ levi:[
+  r=>{const a=ri(r,12,98),b=ri(r,3,9),ans=a*b;return M(`${a} × ${b} = ?`,ans,numOpts(r,ans,12).slice(1),`Multiply tens then ones: ${Math.floor(a/10)*10}×${b} + ${a%10}×${b} = ${ans}.`,"Mission control multiplies fuel use per second by burn time.")},
+  r=>{const pairs=[[4,6,12],[6,8,24],[3,5,15],[4,10,20],[6,9,18],[8,12,24],[5,6,30]];const [a,b,ans]=pick(r,pairs);return M(`LCM of ${a} and ${b}?`,ans,numOpts(r,ans,8).filter(x=>+x>0).slice(1),`List multiples until they meet: ${ans}.`,"LCM tells when two orbiting moons line up again.")},
+  r=>{const d=pick(r,[5,7,8,9,10,12]),a=ri(r,1,d-2),b=ri(r,1,d-1-a);return M(`${a}/${d} + ${b}/${d} = ?`,`${a+b}/${d}`,[`${a+b}/${2*d}`,`${a*b}/${d}`,`${a+b+1}/${d}`],"Same denominator: add the numerators, keep the denominator.","Fuel gauges show fractions of a tank — ½, ¼, ¾.")},
+  r=>{let n=ri(r,100000,999999),s=String(n);const i=ri(r,0,4);if(s[i]==="0"){s=s.slice(0,i)+String(ri(r,1,9))+s.slice(i+1);n=+s}const place=["hundred thousands","ten thousands","thousands","hundreds","tens"][i],val=+s[i]*10**(5-i);return M(`In ${fmt(n)}, what is the value of the digit ${s[i]} (${place})?`,fmt(val),[s[i],fmt(val*10),fmt(Math.max(1,val/10))],`${s[i]} is in the ${place} place, so it's worth ${fmt(val)}.`,"Distances in space run into millions of km — place value keeps them straight.")},
+  r=>{const R=[["XL",40],["XC",90],["LX",60],["XIV",14],["XXIX",29],["LXXV",75],["XCIX",99],["XLIV",44]];const [ro,v]=pick(r,R);return M(`What is ${ro} in numbers?`,v,numOpts(r,v,11).slice(1),"Smaller before bigger means subtract (XL = 50 − 10); after means add.","Clocks, book chapters and Super Bowl numbers still use Roman numerals.")},
+  r=>{const l=ri(r,4,20),w=ri(r,2,12),ans=2*(l+w);return M(`Perimeter of a rectangle ${l} m by ${w} m?`,ans,[String(l*w),String(l+w),String(ans+2)],`2 × (${l} + ${w}) = ${ans} m.`,"Farmers measure perimeter to know how much fencing to buy.")},
+  r=>{const b=ri(r,3,9),q=ri(r,12,60),a=b*q;return M(`${a} ÷ ${b} = ?`,q,numOpts(r,q,6).slice(1),`${b} × ${q} = ${a}, so ${a} ÷ ${b} = ${q}.`,"Sharing supplies equally among astronauts is division.")},
+  r=>{const h=ri(r,2,5),m=pick(r,[15,30,45]),ans=h*60+m;return M(`How many minutes in ${h} hours ${m} minutes?`,ans,numOpts(r,ans,30).slice(1),`${h} × 60 + ${m} = ${ans} minutes.`,"A rocket countdown is measured exactly in minutes and seconds.")}
+ ],
+ malaika:[
+  r=>{const a=ri(r,105,560),b=ri(r,102,430),ans=a+b;return M(`${a} + ${b} = ?`,ans,numOpts(r,ans,10).slice(1),"Add ones, then tens, then hundreds. Carry when you get 10.","Shopkeepers add prices to give the right total.")},
+  r=>{const a=ri(r,300,900),b=ri(r,100,a-50),ans=a-b;return M(`${a} − ${b} = ?`,ans,numOpts(r,ans,10).slice(1),"Subtract ones, tens, hundreds. Borrow when the top number is smaller.","Subtraction tells you the change from your money.")},
+  r=>{const a=pick(r,[2,3,4,5,10]),b=ri(r,2,10),ans=a*b;return M(`${a} × ${b} = ?`,ans,numOpts(r,ans,4).filter(x=>+x>0).slice(1),`${a} groups of ${b} make ${ans}.`,"A box of crayons in rows is multiplication!")},
+  r=>{const b=pick(r,[2,3,4,5]),q=ri(r,2,10),a=b*q;return M(`Share ${a} sweets equally among ${b} children. Each gets…`,q,numOpts(r,q,3).filter(x=>+x>0).slice(1),`${a} ÷ ${b} = ${q}.`,"Sharing fairly is division — and kindness!")},
+  r=>{const c=[[500,500,1000],[200,500,700],[1000,500,1500],[200,200,400],[500,100,600],[1000,1000,2000]];const [a,b,ans]=pick(r,c);return M(`A ${a}-shilling coin/note and a ${b}-shilling coin. How much money?`,`UGX ${fmt(ans)}`,[`UGX ${fmt(ans+100)}`,`UGX ${fmt(Math.abs(a-b)||100)}`,`UGX ${fmt(ans*2)}`],`${a} + ${b} = ${ans} shillings.`,"Counting money helps you buy and save wisely.")},
+  r=>{const n=pick(r,[8,10,12,14,16,20]),ans=n/2;return M(`What is half of ${n}?`,ans,numOpts(r,ans,3).filter(x=>+x>0).slice(1),`Half means 2 equal parts: ${n} ÷ 2 = ${ans}.`,"Cutting a cake in half for two friends is fractions!")},
+  r=>{const sh=[["triangle",3],["square",4],["pentagon",5],["hexagon",6]];const [s,n]=pick(r,sh);return M(`How many sides does a ${s} have?`,n,["3","4","5","6","8"].filter(x=>+x!==n).slice(0,3),`A ${s} has ${n} straight sides.`,"Bees build honeycombs from hexagons — the strongest shape for storing honey.")}
+ ]
+};
+
+/* ---------- ISRAEL (Montessori 3–6): all generated, picture-first ---------- */
+const FRUITS=["🍎","🍌","🥭","🍊","⭐","🐞","🌸","🐟","🍓"];
+const COLOURS=[["red","#e53935"],["blue","#1e88e5"],["yellow","#fdd835"],["green","#43a047"],["orange","#fb8c00"],["purple","#8e24aa"],["pink","#f06292"],["brown","#8d6e63"]];
+const SHAPES=["circle","square","triangle","star","heart","rectangle"];
+const LETTERS=[["a","🍎","apple"],["b","⚽","ball"],["c","🐱","cat"],["d","🐶","dog"],["e","🥚","egg"],["f","🐟","fish"],["g","🐐","goat"],["h","🎩","hat"],["l","🦁","lion"],["m","🥭","mango"],["s","☀️","sun"],["t","🌳","tree"]];
+const SOUNDS=[["moo","🐄","cow"],["baa","🐑","sheep"],["woof","🐶","dog"],["meow","🐱","cat"],["quack","🦆","duck"],["roar","🦁","lion"],["cluck","🐔","hen"],["oink","🐖","pig"]];
+const ISRAEL = {
+ Counting:r=>{const n=ri(r,1,10),f=pick(r,FRUITS);const o=shuffle(r,[1,2,3,4,5,6,7,8,9,10].filter(x=>x!==n)).slice(0,3);return{q:`How many?`,show:f.repeat(n),say:`How many can you count?`,opts:[String(n),...o.map(String)],why:`Let's count together: ${Array.from({length:n},(_,i)=>i+1).join(", ")}!`,w:"Counting helps us share snacks fairly."}},
+ Colours:r=>{const [n,h]=pick(r,COLOURS);const o=shuffle(r,COLOURS.filter(c=>c[0]!==n)).slice(0,3).map(c=>c[0]);return{q:`What colour is this?`,swatch:h,say:`What colour is this?`,opts:[n,...o],why:`That is ${n}!`,w:"Colours tell us when fruit is ripe — a yellow banana is ready to eat."}},
+ Shapes:r=>{const s=pick(r,SHAPES);const o=shuffle(r,SHAPES.filter(x=>x!==s)).slice(0,3);return{q:`What shape is this?`,shape:s,say:`What shape is this?`,opts:[s,...o],why:`It's a ${s}!`,w:"Wheels are circles so they roll; doors are rectangles."}},
+ Letters:r=>{const [l,e,word]=pick(r,LETTERS);const o=shuffle(r,LETTERS.filter(x=>x[0]!==l)).slice(0,3);return{q:`Which one starts with "${l}"?`,say:`Which one starts with the sound ${l}?`,opts:[`${e}|${word}`,...o.map(x=>`${x[1]}|${x[2]}`)],why:`${l} … ${l} … ${word}!`,w:"Letter sounds are the first steps to reading stories."}},
+ Animals:r=>{const [s,e,an]=pick(r,SOUNDS);const o=shuffle(r,SOUNDS.filter(x=>x[0]!==s)).slice(0,3);return{q:`Who says "${s}"?`,say:`Who says ${s}?`,opts:[`${e}|${an}`,...o.map(x=>`${x[1]}|${x[2]}`)],why:`The ${an} says ${s}!`,w:"Farmers listen to their animals to know when they are hungry."}}
+};
+
+
+const TORAH_BIG=[
+ B("What is the first book of the Torah?","Genesis (Bereshit)","Exodus (Shemot)","Numbers (Bamidbar)","Deuteronomy (Devarim)","The five books in order are Genesis, Exodus, Leviticus, Numbers and Deuteronomy."),
+ B("How many books are in the Torah?","Five","Ten","Twelve","Seven","The Torah has five books, also called the Chumash (from the Hebrew word for five)."),
+ B("Who led the Israelites out of Egypt?","Moses","Abraham","Joseph","Noah","The Exodus from Egypt is told in the book of Exodus."),
+ B("Where were the Ten Commandments given?","Mount Sinai","Mount Ararat","Mount Zion","Mount Nebo","Exodus 20 records the Ten Commandments at Mount Sinai."),
+ B("Which day is Shabbat?","The seventh day","The first day","The third day","Every day","Genesis 2 tells that God rested on the seventh day."),
+ B("Who was given the name 'Israel'?","Jacob","Isaac","Moses","Aaron","Genesis 32 tells how Jacob received the name Israel."),
+ B("Joseph's father gave him a special coat of…","Many colours","Gold","Lion skin","Sheep's wool only","Genesis 37 tells of Joseph's coat."),
+ B("After the flood, what sign was given to Noah?","A rainbow","A star","A dove's nest","A burning bush","Genesis 9 tells of the rainbow."),
+ B("Who was Abraham's son born when Abraham was 100?","Isaac","Ishmael","Jacob","Esau","Genesis 21 records Isaac's birth."),
+ B("How many sons did Jacob have?","Twelve","Ten","Seven","Five","Jacob's twelve sons are named in Genesis 35."),
+ B("Which is the middle book of the Torah?","Leviticus (Vayikra)","Genesis","Deuteronomy","Exodus","Leviticus is the third of the five books."),
+ B("Which is the last book of the Torah?","Deuteronomy (Devarim)","Numbers","Joshua","Leviticus","The Torah ends with Deuteronomy.")
+];
+const TORAH_SMALL=[
+ B("Who built the big ark?","Noah","Moses","Joseph","Abraham","The story of Noah's ark is in Genesis 6."),
+ B("How did the animals go into the ark?","Two by two","One by one","Ten by ten","They flew in","Genesis 7 says the animals came in pairs."),
+ B("What was made on the first day?","Light","Fish","People","Trees","Genesis 1 tells that light was made on the first day."),
+ B("What colourful sign appeared in the sky for Noah?","A rainbow","A kite","A moon","A cloud","Genesis 9 tells of the rainbow."),
+ B("Who had a coat of many colours?","Joseph","Noah","Moses","Adam","Genesis 37 tells of Joseph's coat."),
+ B("On which day is Shabbat?","The seventh day","The first day","The second day","Every day","Shabbat is the seventh day of the week."),
+ B("How many books are in the Torah?","Five","Two","Ten","Three","The Torah has five books.")
+];
+BANK.daudi.Torah=TORAH_BIG; BANK.levi.Torah=TORAH_BIG.slice(); BANK.malaika.Torah=TORAH_SMALL;
+BANK.daudi["Motors & Hoops"]=[
+ B("A car travels 120 km in 2 hours. What is its average speed?","60 km/h","240 km/h","120 km/h","30 km/h","Speed = distance ÷ time = 120 ÷ 2.","Drivers, pilots and F1 engineers live by this formula."),
+ B("Which force lets car tyres grip the road?","Friction","Magnetism","Upthrust","Tension","Friction between rubber and tarmac stops skidding.","Bald tyres lose friction — that's why they are dangerous in the rain."),
+ B("Which Ugandan company builds the Kayoola electric bus?","Kiira Motors","Toyota","Tesla","Bajaj","Kiira Motors grew from Makerere University engineering students.","Ugandan engineers are building African vehicles — this could be your future company."),
+ B("Why does a basketball bounce?","It stores and releases elastic energy","Gravity pushes it up","Air outside is lighter","The floor is magnetic","The ball squashes, then springs back, pushing off the floor.","Car suspension springs use the same elastic energy to smooth bumpy roads."),
+ B("A player scores 7 of 10 free throws. What percentage is that?","70%","7%","17%","30%","7 ÷ 10 × 100 = 70%.","NBA scouts judge players by percentages like this."),
+ B("Electric cars store energy in…","Batteries","Petrol tanks","Exhausts","Radiators","Batteries store chemical energy and release it as electricity.","Uganda has deposits of minerals used in batteries — a huge future opportunity."),
+ B("A basketball shot follows a curved path called a…","Parabola","Circle","Straight line","Zigzag","Gravity bends the path into a parabola.","Coaches and game designers use the maths of parabolas to perfect shots."),
+ B("What does an engine's radiator do?","Cools the engine","Makes the car go faster","Charges the phone","Stores fuel","It carries heat away from the engine using coolant.","This is heat transfer from your Physics topic — in every car on the road."),
+ B("A basketball court is 28 m long and 15 m wide. What is its area?","420 m²","86 m²","43 m²","4,200 m²","Area = length × width = 28 × 15.","Builders calculate area to order the right amount of flooring.")
+];
+BANK.levi.Cars=[
+ B("Which part of a car stops it?","Brakes","Horn","Steering wheel","Mirror","Brakes use friction to slow the wheels.","Engineers test brakes again and again because lives depend on them."),
+ B("A car goes 60 km in 1 hour. How far in 3 hours?","180 km","63 km","20 km","120 km","60 × 3 = 180 km.","Truck drivers from Mombasa plan journeys exactly like this."),
+ B("Most cars burn which fuel?","Petrol or diesel","Water","Milk","Sand","Petrol and diesel come from crude oil.","Uganda is preparing to produce its own oil around Lake Albert."),
+ B("Why are tyres made of rubber?","Rubber grips the road and absorbs bumps","Rubber is shiny","Rubber is heavy","Rubber glows at night","Rubber is strong, bendy and grippy.","Rubber comes from rubber trees — nature helps us drive!"),
+ B("Electric cars are better for the air because they…","Give out no exhaust smoke","Are always red","Go backwards","Use more petrol","No burning fuel means no exhaust fumes.","Kiira Motors in Uganda builds electric buses — clean air for Kampala."),
+ B("A race car does 5 laps of 4 km each. How far is that?","20 km","9 km","45 km","1 km","5 × 4 = 20 km.","Race teams count every lap to plan fuel and tyre changes.")
+];
+ISRAEL.Cars=r=>{if(r()<.5){const n=ri(r,1,8);const o=shuffle(r,[1,2,3,4,5,6,7,8,9].filter(x=>x!==n)).slice(0,3);return{q:"How many cars?",show:"🚗".repeat(n),say:"How many cars can you count?",opts:[String(n),...o.map(String)],why:`${Array.from({length:n},(_,i)=>i+1).join(", ")} — ${n} cars! Vroom!`,w:"Cars wait at the red light and go at the green light."}}
+ const V=[["🚌","bus"],["🚗","car"],["🚲","bicycle"],["🚑","ambulance"],["🚒","fire engine"],["🚜","tractor"],["✈️","aeroplane"],["🛵","boda boda"]];const [e,n]=pick(r,V);const o=shuffle(r,V.filter(x=>x[1]!==n)).slice(0,3);
+ return{q:`Which one is the ${n}?`,say:`Which one is the ${n}?`,opts:[`${e}|${n}`,...o.map(x=>`${x[0]}|${x[1]}`)],why:`That's the ${n}!`,w:n==="ambulance"?"The ambulance takes sick people to hospital fast.":n==="tractor"?"Tractors help farmers grow our food.":"We ride these to go places."}};
+ISRAEL["Noah's Ark"]=r=>{const A=["🦒","🐘","🦁","🐒","🦓","🐑","🐄","🐕"];if(r()<.5){const p=ri(r,1,4),a=pick(r,A);const n=p*2;const o=shuffle(r,[1,2,3,4,5,6,7,8,9,10].filter(x=>x!==n)).slice(0,3);return{q:"Noah's animals came two by two. How many?",show:a.repeat(n),say:"Noah's animals came two by two. How many animals?",opts:[String(n),...o.map(String)],why:`${p} pair${p>1?"s":""} make ${n}!`,w:"Noah looked after every animal."}}
+ const a=pick(r,A),others=shuffle(r,A.filter(x=>x!==a)).slice(0,3);return{q:"Find the matching pair!",show:a,say:"Find the animal that matches. Two by two!",opts:[`${a}${a}|pair`,...others.map(x=>`${a}${x}|not a pair`)],why:"Two the same make a pair!",w:"In Noah's ark, animals came in pairs."}};
+const TORAH_FACTS=[
+ "The Torah has five books: Genesis, Exodus, Leviticus, Numbers and Deuteronomy.",
+ "In Hebrew the five books are Bereshit, Shemot, Vayikra, Bamidbar and Devarim.",
+ "A Torah scroll is written by hand by a trained scribe called a sofer.",
+ "A Torah scroll is written on parchment with a quill and special ink.",
+ "A Torah scroll has 304,805 letters.",
+ "The Torah is divided into 54 weekly portions, called parashot.",
+ "Hebrew is written and read from right to left.",
+ "The Torah is read aloud on Mondays, Thursdays and Shabbat.",
+ "A pointer called a yad is used when reading the Torah scroll.",
+ "Genesis has 50 chapters.",
+ "Exodus has 40 chapters.",
+ "Leviticus has 27 chapters.",
+ "Numbers has 36 chapters.",
+ "Deuteronomy has 34 chapters.",
+ "The yearly cycle of Torah reading finishes and begins again on Simchat Torah.",
+ "The first word of the Torah is Bereshit.",
+ "Shabbat begins at sunset on Friday and ends at nightfall on Saturday.",
+ "A Torah scroll is rolled on two wooden poles called etz chaim."
+];
+
+
+/* ---------- MALAIKA · P3 Topic (Literacy One), Term 3 themes ---------- */
+const TOPIC_THEMES={
+ "Transport":[
+  B("What is transport?","Moving people and goods from one place to another","Sending and receiving messages","Making pots and mats","Keeping peace at home","Transport moves people and goods from place to place.","Without transport, food from farms would never reach Kampala markets."),
+  B("How many types of transport are there?","Four","Two","Six","Ten","Road, railway, water and air transport.","Uganda uses all four — even trains to Kenya!"),
+  B("Which one is water transport?","Boat","Lorry","Train","Aeroplane","Boats, ferries, ships and dhows move on water.","Ferries carry people and cars across Lake Victoria to the islands."),
+  B("Which one is air transport?","Helicopter","Ferry","Bicycle","Taxi","Aeroplanes, helicopters, jets and rockets fly in the air.","Helicopters carry sick people quickly to hospital."),
+  B("A train is used in which type of transport?","Railway transport","Road transport","Water transport","Air transport","Trains move on railway lines.","One train can carry as much as many lorries."),
+  B("Which one is road transport?","Bicycle","Boat","Ship","Helicopter","Bicycles, cars, taxis, buses and lorries use roads.","Most people in Uganda travel by road every day."),
+  B("Where do aeroplanes land?","Airport","Bus park","Port","Garage","Aeroplanes land at airports and airstrips.","Uganda's main airport is at Entebbe."),
+  B("Where do ships stop to load and offload goods?","Port","Airport","Taxi park","Garage","Ships stop at ports.","Uganda's goods reach the sea through the port of Mombasa."),
+  B("Where are broken cars repaired?","Garage","Airport","Landing site","Port","Mechanics repair cars in garages.","Mechanics are important workers who keep cars safe."),
+  B("Where do fishermen land their boats?","Landing site","Airport","Bus park","Garage","Boats land at landing sites on lakes and rivers.","Fish from landing sites is sold in markets."),
+  B("Why do few people use air transport?","It is costly","It is very slow","There are no aeroplanes","It is too quiet","Air transport is expensive.","People save money to travel by air for long journeys."),
+  B("Who flies an aeroplane?","A pilot","A driver","A teacher","A farmer","A pilot flies an aeroplane; a captain sails a ship.","Transport gives people jobs: drivers, pilots and captains."),
+  B("Which animal is used for transport?","Donkey","Hen","Cat","Fish","Donkeys, horses and camels carry people and loads.","In some places donkeys carry water home every day."),
+  B("Which of these does transport help us carry?","Food to the market","Peace","Sunshine","Clouds","Transport carries food, timber, charcoal and animals.","Lorries bring matooke from Mbarara to Kampala.")
+ ],
+ "Communication":[
+  B("What is communication?","Sending and receiving messages","Moving goods","Making baskets","Planting trees","Communication is sending and receiving messages.","Phones let you talk to Grandma far away."),
+  B("Which one is a means of communication?","Radio","Hoe","Pot","Basket","Radio, television, telephone, drum and newspapers send messages.","Radios tell farmers about the weather."),
+  B("Long ago, people sent messages by beating a…","Drum","Pot","Cup","Mat","Drums and horns were used to send messages.","Drum sounds can travel very far."),
+  B("Which one do we read the news in?","Newspaper","Radio","Drum","Whistle","We read newspapers and books; we listen to radios.","Newspapers tell us what is happening in our country."),
+  B("A football referee communicates using a…","Whistle","Drum","Newspaper","Television","The referee blows a whistle.","A whistle is a quick message everyone can hear."),
+  B("Which can we use to both see and hear messages?","Television","Drum","Whistle","Horn","Television shows pictures and sound.","Television lets us watch lessons and news.")
+ ],
+ "Things We Make":[
+  B("Pots are made from…","Clay","Sisal","Bottle tops","Seeds","Pots are made from clay.","Clay pots keep water cool."),
+  B("Mats can be made from…","Palm leaves","Clay","Stones","Tins","Mats are woven from palm leaves.","Mats can be sold to get money."),
+  B("Ropes can be made from…","Sisal","Clay","Stones","Tins","Sisal fibres are twisted into ropes.","Ropes help tie goods on bicycles and lorries."),
+  B("Where can we get clay to make pots?","Swamp","Cloud","Sun","Tree top","Clay is found in swamps.","Potters collect clay carefully so swamps stay healthy."),
+  B("A toy car can be made from…","Tins and bottle tops","Water","Clouds","Fire","Children make toy cars from tins, sticks and bottle tops.","Making toys is how many engineers started!"),
+  B("A ball can be made from…","Banana fibres","Clay","Stones","Water","Banana fibres can be tied into a ball.","Old materials can be reused to make something new."),
+  B("Why do people make baskets and mats to sell?","To get money","To break them","To waste time","To fight","Things we make can be sold for income.","Craft makers earn money for their families."),
+  B("Which thing do we make for music?","Drum","Pot","Mat","Rope","Musical instruments include drums.","Music is used in celebrations and worship."),
+  B("Where can we buy materials like threads and cloth?","Market or shop","Swamp","Forest","Lake","Some materials come from markets and shops.","Markets bring sellers and buyers together.")
+ ],
+ "Our Environment":[
+  B("What is our environment?","Our surroundings","Only our house","Only the sky","Only water","The environment is everything around us: air, plants, animals, water, hills.","Caring for our surroundings keeps us healthy."),
+  B("Which one is a living thing?","Hen","Stone","Cup","Table","Living things grow, feed, move and reproduce.","Living things need care to survive."),
+  B("Which one is a non-living thing?","Stone","Grass","Insect","Hen","Stones do not grow or feed.","We use non-living things like stones for building."),
+  B("Which of these do ALL living things do?","Grow","Fly","Swim","Speak","All living things grow, feed, move, respire, excrete and reproduce.","Babies, puppies and seedlings all grow!"),
+  B("Which is one of the main parts of a plant?","Roots","Fruits","Flowers","Buds","Main parts: roots, stem and leaves. Others: flowers, fruits, buds, branches.","Roots hold the plant firmly in the soil."),
+  B("We eat the roots of…","Cassava","Cabbage","Sugarcane","Mango","Cassava roots are eaten.","Cassava is an important food in Uganda."),
+  B("We eat the stem of…","Sugarcane","Cassava","Cabbage","Mango","We chew sugarcane stems.","Sugar is made from sugarcane in factories like Kakira."),
+  B("We eat the leaves of…","Cabbage","Cassava","Sugarcane","Mango","Cabbage leaves are eaten.","Green leaves keep our bodies healthy."),
+  B("Which gas do plants give us?","Oxygen","Smoke","Dust","Steam","Plants give us oxygen to breathe.","More trees mean cleaner air."),
+  B("What is the major source of water?","Rain","Borehole","Tap","Bottle","Rain is the major source of water.","Rain fills our lakes, rivers and wells."),
+  B("Which one is a source of water?","Borehole","Garage","Airport","Table","Wells, boreholes, lakes, rivers, streams and rain give us water.","Boreholes give many villages clean water."),
+  B("What does the sun give us?","Light and warmth","Rain","Food in packets","Water","The sun gives light and warmth.","Solar panels change sunlight into electricity."),
+  B("Which activity destroys the environment?","Bush burning","Planting trees","Mulching","Water harvesting","Bush burning kills plants and animals.","Burning also makes the air dirty."),
+  B("Which is a good way to care for the environment?","Planting trees","Cutting down trees","Burning polythene","Overgrazing","Planting trees conserves the environment.","Trees give shade, fruit and clean air."),
+  B("Covering soil around crops with dry grass is called…","Mulching","Bush burning","Overgrazing","Hunting","Mulching keeps soil wet and cool.","Farmers mulch to get better harvests."),
+  B("Collecting rainwater in tanks is called…","Water harvesting","Pollution","Bush burning","Overgrazing","Water harvesting saves rainwater.","Saved rainwater helps in the dry season."),
+  B("Why should we NOT build or farm in swamps?","It destroys the environment","Swamps are too dry","Swamps have no water","Swamps are too high","Swamps keep water and are homes for animals.","Destroying swamps can cause floods."),
+  B("Which is good waste disposal?","Putting rubbish in a bin","Throwing rubbish on the road","Burning polythene","Dumping in rivers","Proper waste disposal keeps our environment clean.","Clean surroundings stop diseases."),
+  B("Plants give us…","Food, medicine and timber","Only noise","Only stones","Only plastic","Plants give food, firewood, timber, herbs and shade.","Many medicines come from plants.")
+ ],
+ "Peace and Security":[
+  B("What does security mean?","Safety and protection","Fighting","Shouting","Hunger","Security means safety, refuge or protection.","Security lets children go to school safely."),
+  B("What does peace mean?","Calm and quiet","War","Stealing","Shouting","Peace means calm and quiet.","In peace, families and countries can develop."),
+  B("Who keeps peace and security in the community?","Police officer","Thief","Bully","Robber","Police, army, LCs, parents, teachers and leaders keep peace.","You can be a peacemaker too!"),
+  B("Which one promotes peace at school?","Following school rules","Fighting","Stealing","Teasing others","Following rules, respect and cooperation promote peace.","Rules help everyone learn happily."),
+  B("Which one causes insecurity at school?","Stealing","Sharing","Cooperation","Listening","Stealing, fighting and teasing cause insecurity.","When things are stolen, people stop trusting each other."),
+  B("Which one promotes peace at home?","Love and care","Shouting","Violence","Hunger","Love, care, respect and sharing bring peace at home.","A peaceful home helps children learn better."),
+  B("Which one causes insecurity at home?","Violence","Respect","Sharing","Cooperation","Violence, hunger and neglect cause insecurity.","Talking calmly solves problems better than fighting."),
+  B("Why is peace important?","It brings development and safety","It causes fights","It makes people hungry","It stops learning","Peace brings harmony, development, good health and safety.","Peaceful countries can build schools and hospitals."),
+  B("Which of these people keep peace in our country?","The army","Robbers","Bullies","Thieves","The army and police protect the country.","Soldiers and police protect our borders and homes.")
+ ]
+};
+BANK.malaika.Topic=[].concat(...Object.entries(TOPIC_THEMES).map(([t,a])=>a.map(q=>({...q,theme:t}))),BANK.malaika.Literacy.map(q=>({...q,theme:"Living things & health"})));
+delete BANK.malaika.Literacy;
+
+/* =========================================================
+   ARCADE ENGINE — every format draws on the same banks
+   ========================================================= */
+const STYLE={quest:"Daily quiz",adventure:"Adventure",sprint:"Speed sprint",exam:"Practice exam",tf:"True/False blitz",sowhat:"So What? challenge",scramble:"Word scramble",match:"Memory match"};
+const cleanOpt=x=>x.includes("|")?x.split("|")[1]:x;
+function poolOf(k){const out=[];const tu=typeof tierUnlocked==="function"?tierUnlocked(k):1;for(const [s,arr] of Object.entries(BANK[k]||{}))for(const q of arr)if(!q.tier||q.tier<=tu)out.push({...q,subject:q.subject||s});return out}
+function mathItems(k,n,r){if(!GEN[k])return[];return Array.from({length:n},()=>({...pick(r,GEN[k])(r),subject:"Mathematics"}))}
+function tfQ(it,r){const truth=r()<.5;const shown=cleanOpt(truth?it.opts[0]:pick(r,it.opts.slice(1)));
+ return{q:`True or false?  ${it.q}  →  ${shown}`,opts:truth?["True","False"]:["False","True"],order:truth?[0,1]:[1,0],why:truth?`True. ${it.why}`:`False — the answer is ${cleanOpt(it.opts[0])}. ${it.why}`,w:it.w,subject:it.subject,section:"True or false"}}
+function swQ(it,pool,r){const others=shuffle(r,[...new Set(pool.filter(x=>x.w&&x.w!==it.w).map(x=>x.w))]).slice(0,3);
+ return{q:`${it.q}  →  ${cleanOpt(it.opts[0])}.  So what? Which shows why this matters?`,opts:[it.w,...others],why:it.why,subject:it.subject,section:"So what?"}}
+function buildExam(k){const r=rng(Date.now());const pool=poolOf(k).filter(q=>q.opts.length===4);
+ const mcq=shuffle(r,pool).slice(0,10).concat(mathItems(k,5,r)).map(q=>({...q,section:"Section A · Choose the answer"}));
+ const tf=shuffle(r,pool).slice(0,5).map(q=>tfQ(q,r));
+ const sw=shuffle(r,pool.filter(q=>q.w)).slice(0,5).map(q=>swQ(q,pool,r));
+ return[...shuffle(r,mcq),...tf,...sw].map(q=>({...q,order:q.order||shuffle(r,[...q.opts.keys()])}))}
+function buildTF(k){const r=rng(Date.now());const pool=poolOf(k).concat(mathItems(k,6,r));return shuffle(r,pool).slice(0,12).map(q=>tfQ(q,r))}
+function buildSW(k){const r=rng(Date.now());const pool=poolOf(k);return shuffle(r,pool.filter(q=>q.w)).slice(0,8).map(q=>{const x=swQ(q,pool,r);return{...x,order:shuffle(r,[0,1,2,3])}})}
+function scrambleWords(k){const max=k==="malaika"?8:11;const seen=new Set();
+ return poolOf(k).filter(q=>/^[A-Za-z]{3,}$/.test(q.opts[0])&&q.opts[0].length<=max&&!seen.has(q.opts[0].toLowerCase())&&seen.add(q.opts[0].toLowerCase())).map(q=>({word:q.opts[0].toLowerCase(),hint:q.q,why:q.why,w:q.w,subject:q.subject}))}
+const ARCADE={
+ daudi:["exam","tf","sowhat","scramble","match"],
+ levi:["exam","tf","sowhat","scramble","match"],
+ malaika:["exam","tf","sowhat","scramble","match"],
+ israel:["match"]
+};
+const ARCADE_INFO={
+ exam:["📝","Practice exam","25 questions in three sections, finishing with So What? questions. New paper every time."],
+ tf:["✅","True/False blitz","12 quick statements. Is it true or false? Trust your brain."],
+ sowhat:["🌍","So What? challenge","You know the answer — now pick why it matters in the real world."],
+ scramble:["🔤","Word scramble","Unscramble the key word. The clue is the question."],
+ match:["🃏","Memory match","Flip cards and match each question to its answer."]
+};
+
+
+/* =========================================================
+   WORLD AHEAD — ideas from top school systems (Singapore maths models,
+   Estonian coding & logic, money sense, global science). Tiers unlock by level.
+   ========================================================= */
+const T=(tier,...a)=>({...B(...a),tier});
+BANK.daudi["World Ahead"]=[
+ T(1,"In coding, a step-by-step set of instructions that solves a problem is called…","An algorithm","A browser","A pixel","A virus","Every app, game and search engine runs on algorithms.","Estonia teaches children to write algorithms from primary school — it now has more tech start-ups per person than almost anywhere."),
+ T(1,"What does 'AI' stand for?","Artificial intelligence","Automatic internet","Advanced information","Applied invention","AI is software that learns patterns from data.","AI already helps doctors read scans and farmers spot crop disease from phone photos."),
+ T(1,"What comes next: 2, 6, 18, 54, …?","162","72","108","60","Each term is multiplied by 3.","Spotting patterns is how scientists predict growth — of savings, populations or viruses."),
+ T(1,"Which molecule carries the genetic instructions of living things?","DNA","ATP","Glucose","Protein","DNA is the code inside cells.","DNA testing solves crimes, confirms family links and designs new medicines."),
+ T(1,"Simple interest on UGX 100,000 at 10% a year for 2 years is…","UGX 20,000","UGX 10,000","UGX 200,000","UGX 2,000","Interest = 100,000 × 10% × 2.","Understanding interest is how you make money work for you instead of against you."),
+ T(2,"Daudi and Levi have 60 toy cars together. Daudi has twice as many as Levi. How many does Levi have?","20","30","40","15","Bar model: Levi = 1 bar, Daudi = 2 bars, 3 bars = 60, so 1 bar = 20.","Singapore's bar models turn word problems into pictures — one reason its students top world maths tests."),
+ T(2,"What is the probability of rolling a 6 on a fair die?","1/6","1/2","6/6","1/3","One good outcome out of six possible.","Insurance companies and sports analysts use probability every day."),
+ T(2,"x = 3. A program repeats 'x = x + 2' four times. What is x at the end?","11","9","5","14","3 + 2 + 2 + 2 + 2 = 11.","Loops let one line of code do work a million times — that's the power of programming."),
+ T(2,"When many people want something but there is little of it, the price usually…","Rises","Falls","Stays zero","Disappears","This is supply and demand.","It explains why sugar prices jump in a shortage and why rare sneakers cost more."),
+ T(2,"A solar panel converts sunlight directly into…","Electricity","Water","Heat only","Sound","Solar cells turn light energy into electrical energy.","Solar power is lighting homes across rural Uganda without a power line."),
+ T(3,"A right-angled triangle has shorter sides 6 cm and 8 cm. How long is the longest side?","10 cm","14 cm","12 cm","48 cm","Pythagoras: 6² + 8² = 100, and √100 = 10.","Builders and game designers use Pythagoras to measure distances on a grid."),
+ T(3,"Bacteria double every hour. Starting with 1, how many after 10 hours?","1,024","20","100","512","2¹⁰ = 1,024.","Exponential growth explains pandemics, compound savings and viral videos."),
+ T(3,"UGX 100,000 grows at 10% compound interest for 2 years. What is the total?","UGX 121,000","UGX 120,000","UGX 110,000","UGX 200,000","Year 1: 110,000. Year 2: 110,000 + 11,000 = 121,000.","Compound interest rewards people who start saving early."),
+ T(3,"'Everyone is buying it, so it must be good.' This weak argument is called…","Bandwagon","Evidence","A hypothesis","A fact","Popularity doesn't prove something is true.","Spotting weak arguments protects you from scams and fake news."),
+ T(3,"Light travels at roughly…","300,000 km per second","300 km per hour","3,000 km per second","30 km per second","Nothing travels faster than light.","Satellite signals for GPS and phones travel at this speed.")
+];
+BANK.levi["World Ahead"]=[
+ T(1,"Levi has 3 times as many stickers as Malaika. Together they have 40. How many does Malaika have?","10","30","13","20","Bar model: Malaika 1 bar, Levi 3 bars, 4 bars = 40, 1 bar = 10.","Singapore students solve problems this way — drawing the problem first."),
+ T(1,"What comes next: 1, 4, 9, 16, …?","25","20","24","32","These are square numbers: 1², 2², 3², 4², 5².","Square numbers help engineers work out areas of floors and fields."),
+ T(1,"A step-by-step list of instructions for a computer is called…","An algorithm","A keyboard","A planet","A battery","Algorithms tell computers exactly what to do.","Rovers on Mars follow algorithms because they are too far away to steer live."),
+ T(1,"You save UGX 2,000 every week. How much after 10 weeks?","UGX 20,000","UGX 12,000","UGX 200,000","UGX 2,010","2,000 × 10 = 20,000.","Small savings done often become big money — that's how goals are reached."),
+ T(1,"Which is the largest ocean on Earth?","Pacific Ocean","Indian Ocean","Atlantic Ocean","Arctic Ocean","The Pacific covers about a third of Earth.","Rockets returning from space often splash down in oceans."),
+ T(2,"In computer programs, a 'bug' is…","A mistake in the code","An insect inside the computer","A fast program","A game","Programmers 'debug' to fix mistakes.","Finding and fixing mistakes is a skill every scientist and engineer needs."),
+ T(2,"All planets orbit a star. Mars is a planet. So Mars…","Orbits a star","Is a star","Has no orbit","Is a moon","If both statements are true, the conclusion must be true.","This kind of logic is the foundation of maths proofs and computer code."),
+ T(2,"Gravity on the Moon is about how strong compared with Earth?","One-sixth","Double","The same","Ten times","The Moon has much less mass than Earth.","Astronauts can jump six times higher on the Moon!"),
+ T(2,"What is the next prime number after 7?","11","9","8","10","A prime has exactly two factors: 1 and itself. 9 = 3 × 3.","Prime numbers keep your bank card and phone messages secret through encryption."),
+ T(2,"Which of these is a need, not a want?","Clean water","A video game","Sweets","A toy car","Needs keep us alive; wants are nice to have.","Smart spenders cover needs first, then save, then buy wants."),
+ T(3,"What is the area of a triangle with base 10 cm and height 6 cm?","30 cm²","60 cm²","16 cm²","36 cm²","Area = ½ × base × height = ½ × 10 × 6.","Solar panel makers calculate areas to fit the most panels on a roof."),
+ T(3,"½ + ¼ = ?","¾","2/6","1/6","2/4","½ = 2/4, and 2/4 + 1/4 = 3/4.","Fractions are used to measure fuel, medicine and recipes."),
+ T(3,"What helps a robot 'feel' and 'see' the world around it?","Sensors","Wheels","Paint","Batteries","Sensors detect light, sound, distance and touch.","Self-driving cars use dozens of sensors to avoid accidents."),
+ T(3,"A light-year measures…","Distance","Time","Weight","Speed of sound","It is how far light travels in one year.","Stars are so far away that we measure them in light-years, not kilometres."),
+ T(3,"An electric car has no exhaust pipe, so it gives out no…","Exhaust fumes","Light","Sound at all","Heat at all","Electric motors don't burn fuel.","Cleaner cars mean cleaner city air for everyone.")
+];
+BANK.malaika["World Ahead"]=[
+ T(1,"Which shape has no corners?","Circle","Square","Triangle","Rectangle","A circle is round all the way.","Wheels are circles so they roll smoothly."),
+ T(1,"Red, blue, red, blue, … what comes next?","Red","Blue","Green","Yellow","The pattern repeats red, blue.","Patterns are used to make beautiful fabrics and dresses."),
+ T(1,"Which one is a NEED, not a want?","Food","A toy","Sweets","A sticker","We need food to live; toys are wants.","Knowing needs and wants helps you spend money wisely."),
+ T(1,"How many legs do 2 hens have altogether?","4","2","6","8","Each hen has 2 legs: 2 + 2 = 4.","Counting in groups is the start of multiplication."),
+ T(1,"Which is bigger: half a cake or a quarter of a cake?","Half","Quarter","They are the same","Neither","Half is 2 quarters.","Sharing a cake fairly is fractions in real life."),
+ T(2,"Malaika has 5 ribbons. Her friend has 3 more than her. How many ribbons does her friend have?","8","2","5","15","5 + 3 = 8. Draw two bars to see it!","Drawing a problem helps you solve it — top maths countries teach this."),
+ T(2,"A computer can only do what it is told by…","Instructions (a program)","Magic","Wishing","Shouting","People write programs that tell computers what to do.","Girls and boys who code build apps and games."),
+ T(2,"Which planet do we live on?","Earth","Mars","Jupiter","The Moon","We live on planet Earth.","Earth is the only planet we know with life."),
+ T(2,"You save 500 shillings every day for 4 days. How much do you have?","2,000","900","504","1,000","500 + 500 + 500 + 500 = 2,000.","Saving a little every day helps you buy something special."),
+ T(2,"A butterfly's two wings look the same on both sides. This is called…","Symmetry","Shading","Counting","Mixing","Symmetry means both halves match.","Designers use symmetry to make crowns, castles and dresses beautiful."),
+ T(3,"Which is the largest continent?","Asia","Africa","Europe","Australia","Asia is the biggest; Africa is second.","Africa is the second biggest — and Uganda is right in the middle!"),
+ T(3,"3, 6, 9, 12, … what comes next?","15","13","14","16","Count on in threes.","Counting in steps helps you learn your times tables fast."),
+ T(3,"When light passes through a glass prism, it splits into…","Rainbow colours","Darkness","Water","Smoke","White light is made of many colours.","This is how scientists learned what sunlight is made of."),
+ T(3,"If today is Monday, what day will it be in 3 days?","Thursday","Wednesday","Friday","Tuesday","Tuesday, Wednesday, Thursday.","Planning ahead by days helps you get ready for exams."),
+ T(3,"Which of these can a robot do?","Follow instructions","Feel sad","Eat lunch","Grow taller","Robots follow programmed instructions.","Robots help doctors and build cars in factories.")
+];
+ISRAEL.Patterns=r=>{const sets=[["🍎","🍌"],["🔴","🔵"],["🚗","🚌"],["⭐","🌙"],["🐶","🐱"]];const [a,b]=pick(r,sets);const seq=[a,b,a,b,a];const others=shuffle(r,["🍓","🐟","🌸","🚜"]).slice(0,2);
+ return{q:"What comes next?",show:seq.join(" ")+" ❓",say:"What comes next in the pattern?",opts:[b,a,...others],why:"The pattern goes "+a+" "+b+" "+a+" "+b+"!",w:"Patterns help us learn music, numbers and reading."}};
+
+/* ---------- Levels: the more they play and win, the more they unlock ---------- */
+const LEVELS=[0,25,75,150,300,500,800,1200,1700,2400];
+const RANKS={daudi:["Rookie","Starter","Sixth Man","Point Guard","Team Captain","All-Star","MVP","Champion","Hall of Famer","Legend"],
+ levi:["Cadet","Pilot","Navigator","Flight Engineer","Commander","Captain","Star Captain","Admiral","Galaxy Admiral","Legend of the Stars"],
+ malaika:["Little Star","Painter","Princess","Royal Artist","Crown Princess","Rainbow Princess","Queen of Colours","Royal Inventor","Empress of Ideas","Legend"],
+ israel:["Seed","Sprout","Bud","Flower","Sunflower","Garden Helper","Garden Keeper","Garden King","Super Gardener","Legend"]};
+function levelOf(k){const xp=stars(k);let l=0;while(l+1<LEVELS.length&&xp>=LEVELS[l+1])l++;return{lvl:l+1,xp,rank:RANKS[k][l],next:LEVELS[l+1],from:LEVELS[l]}}
+function tierUnlocked(k){const l=levelOf(k).lvl;return l>=5?3:l>=3?2:1}
+const NEXT_UP={malaika:"levi",levi:"daudi"};
+const ADV_GEN=[
+ r=>{const a=ri(r,2,9),b=ri(r,2,9),x=ri(r,1,9),y=ri(r,1,9);return M(`x + y = ${x+y} and x − y = ${x-y}. Find x.`,x,[String(y),String(x+1),String(x+y)],`Add the equations: 2x = ${2*x}, so x = ${x}.`,"Simultaneous equations solve two unknowns at once — like finding two prices from two receipts.")},
+ r=>{const n=pick(r,[16,25,36,49,64,81,100,121,144,169]),ans=Math.sqrt(n);return M(`√${n} = ?`,ans,numOpts(r,ans,3).slice(1),`${ans} × ${ans} = ${n}.`,"Square roots appear in Pythagoras, physics and computer graphics.")},
+ r=>{const a=ri(r,2,5),b=ri(r,2,5),tot=(a+b)*ri(r,3,12);const ans=tot*a/(a+b);return M(`Share UGX ${fmt(tot*1000)} in the ratio ${a}:${b}. The larger... no — the first share is?`.replace(" The larger... no — the first share is?"," What is the first share?"),`UGX ${fmt(ans*1000)}`,[`UGX ${fmt(tot*1000/(a+b)*b)}`,`UGX ${fmt(tot*1000/2)}`,`UGX ${fmt(ans*1000+1000)}`],`Total parts = ${a+b}. One part = ${fmt(tot*1000/(a+b))}. First share = ${a} parts.`,"Business partners share profits using ratios.")}
+];
+
+const SUBJECTS = {
+ daudi:[["Mathematics","📐"],["Biology","🌿"],["Chemistry","⚗️"],["Physics","🧲"],["Geography","🗺️"],["History","🏛️"],["English","✍️"],["ICT","💻"],["Motors & Hoops","🏀"],["World Ahead","🌐"],["Torah","📜"]],
+ levi:[["Mathematics","🔢"],["Science","🔬"],["SST","🌍"],["English","📖"],["Space","🪐"],["Cars","🏎️"],["World Ahead","🌐"],["Torah","📜"]],
+ malaika:[["Topic","🌻"],["Mathematics","➕"],["English","🖍️"],["Colours","🎨"],["World Ahead","🌐"],["Torah","📜"]],
+ israel:[["Counting","🍌"],["Colours","🔴"],["Shapes","🔺"],["Letters","🔤"],["Animals","🐄"],["Cars","🚗"],["Patterns","🧩"],["Noah's Ark","🌈"]]
+};
+const ADVENTURE = {
+ daudi:{title:"Buzzer Beater",sub:"10 mixed shots from every subject. Every right answer is a swish — score 20 to win the game.",n:10,icon:"🏀"},
+ levi:{title:"Rocket to Neptune",sub:"Fly past all 8 planets. Each right answer fires your engines to the next one.",n:8,icon:"🚀"},
+ malaika:{title:"Princess Rainbow Castle",sub:"7 questions, 7 colours. Every right answer paints and shades a band over your castle.",n:7,icon:"🏰"},
+ israel:{title:"Flower Garden",sub:"Make 6 flowers bloom! Tap the right picture.",n:6,icon:"🌼"}
+};
+const PLE_MAP = {levi:{Mathematics:"Mathematics",English:"English",Science:"Science",SST:"Social Studies"},malaika:{Mathematics:"Mathematics",English:"English",Topic:["Science","Social Studies"]}};
+
+function makeQuestion(kid,subject,r){
+ if(kid==="israel")return ISRAEL[subject](r);
+ if(subject==="Mathematics"){const lvl=levelOf(kid).lvl;const stretch=Math.min(.45,.1*(lvl-1));
+  if(r()<stretch){const q=pick(r,NEXT_UP[kid]?GEN[NEXT_UP[kid]]:ADV_GEN)(r);return{...q,stretch:true}}
+  return pick(r,GEN[kid])(r)}
+ return pick(r,BANK[kid][subject]);
+}
+function buildSet(kid,subject,n,seedStr){
+ const r=rng(hash(seedStr));const out=[];const seen=new Set();let guard=0;
+ const subs=SUBJECTS[kid].map(s=>s[0]);
+ while(out.length<n&&guard<200){guard++;
+  const s=subject==="__mix"?subs[out.length%subs.length]:subject;
+  if(kid!=="israel"&&s!=="Mathematics"){
+    const bank=BANK[kid][s].filter(q=>!q.tier||q.tier<=tierUnlocked(kid));const pool=shuffle(r,bank).filter(x=>!seen.has(x.q));
+    if(pool.length){seen.add(pool[0].q);out.push({...pool[0],subject:s});continue}
+  }
+  const q=makeQuestion(kid,s,r);if(seen.has(q.q+q.opts[0]))continue;seen.add(q.q+q.opts[0]);out.push({...q,subject:s});
+ }
+ return out.map(q=>({...q,order:shuffle(r,[0,1,2,3])}));
+}
+
+/* =========================================================
+   STORE  (shared family database, with on-device fallback)
+   ========================================================= */
+const S={mode:"connecting",attempts:[],settings:{names:{},pin:"2026"},db:null};
+const LS_A="zadokite_attempts",LS_S="zadokite_settings";
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function useLocal(){if(S.mode==="shared")return;S.mode="device";S.attempts=lsGet(LS_A,[]);S.settings={...S.settings,...lsGet(LS_S,{})};render()}
+const FB_CONFIG={apiKey:"AIzaSyDW3yCWrgKmbAyHdEwnTZloK0yDeeHD640",authDomain:"house-of-israel.firebaseapp.com",projectId:"house-of-israel",storageBucket:"house-of-israel.firebasestorage.app",messagingSenderId:"385499051298",appId:"1:385499051298:web:90fce55d337499fcefa17b"};
+const FAMILY_EMAIL="family@zadokite.study";
+let FB=null,AUTH=null,unsubs=[];
+function fbBoot(){try{FB=firebase.initializeApp(FB_CONFIG,"zadokite");AUTH=FB.auth();try{FB.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}}catch(e){FB=null;AUTH=null}}
+async function initStore(){
+ unsubs.forEach(u=>{try{u()}catch(e){}});unsubs=[];
+ if(!FB){useLocal();return}
+ const db=FB.firestore();S.db=db;
+ unsubs.push(db.collection("zadokite_attempts").orderBy("ts","desc").limit(1500).onSnapshot(snap=>{
+   S.mode="shared";S.attempts=snap.docs.map(d=>d.data());render(true);
+ },()=>{S.mode="device";useLocalForce()}));
+ unsubs.push(db.doc("zadokite/settings").onSnapshot(s=>{if(s.exists){S.settings={...S.settings,...s.data()};render(true)}},()=>{}));
+}
+function useLocalForce(){S.mode="device";S.attempts=lsGet(LS_A,[]);S.settings={...S.settings,...lsGet(LS_S,{})};render()}
+async function saveAttempt(a){
+ if(S.mode==="shared"&&S.db){try{await S.db.collection("zadokite_attempts").add(a);return}catch(e){}}
+ S.attempts.unshift(a);lsSet(LS_A,S.attempts.slice(0,1500));
+}
+async function saveSettings(patch){
+ S.settings={...S.settings,...patch};
+ if(S.mode==="shared"&&S.db){try{await S.db.doc("zadokite/settings").set(S.settings);return true}catch(e){return false}}
+ lsSet(LS_S,S.settings);return true;
+}
+const nameOf=k=>(S.settings.names&&S.settings.names[k])||KIDS[k].name;
+const clsOf=k=>(S.settings.classes&&S.settings.classes[k])||KIDS[k].cls;
+
+/* =========================================================
+   STATS
+   ========================================================= */
+function dayStr(d=new Date()){const z=n=>String(n).padStart(2,"0");return`${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`}
+function daysBack(n){const d=new Date();d.setDate(d.getDate()-n);return dayStr(d)}
+const of=k=>S.attempts.filter(a=>a.child===k);
+function stars(k,day){return of(k).filter(a=>!day||a.day===day).reduce((s,a)=>s+(a.score||0),0)}
+function streak(k){const days=new Set(of(k).map(a=>a.day));let n=0;for(let i=0;i<400;i++){const d=daysBack(i);if(days.has(d))n++;else if(i>0)break}return n}
+function questDone(k,subject,day){const a=of(k).filter(x=>x.day===day&&x.subject===subject&&x.mode==="quest");return a.length?a.reduce((b,x)=>x.score/x.total>b.score/b.total?x:b):null}
+function accBySubject(k,days=30){const since=daysBack(days);const m={};for(const a of of(k)){if(a.day<since)continue;for(const [s,v] of Object.entries(a.bySubject||{[a.subject]:[a.score,a.total]})){m[s]=m[s]||[0,0];m[s][0]+=v[0];m[s][1]+=v[1]}}return m}
+function plays(k,s){return of(k).filter(a=>a.subject===s).length}
+
+/* =========================================================
+   RENDER — routing on the hash
+   ========================================================= */
+let PLAY=null;
+let familyIn=false,authReady=false;
+function renderLogin(){
+ if(!authReady){$("#app").innerHTML=`<div class="wrap"><div class="lock"><h1 style="font-size:34px">Zadokite Study Tool</h1><p class="muted">Opening…</p></div></div>`;return}
+ $("#app").innerHTML=`<div class="wrap"><form class="lock" id="loginf"><img src="icon-192.png" alt="" width="84" height="84" style="border-radius:20px"><h1 style="font-size:34px">Zadokite Study Tool</h1>
+  <label class="tiny muted" for="fpw">Family password</label><input id="fpw" type="password" autocomplete="current-password">
+  <div class="err" id="ferr"></div><button class="btn" type="submit" id="fgo">Come in</button></form></div>`;
+ $("#fpw").focus();
+ $("#loginf").onsubmit=async e=>{e.preventDefault();const pw=$("#fpw").value;if(!pw)return;if(!AUTH){$("#ferr").textContent="No internet just now. Connect and try again.";return}$("#fgo").disabled=true;$("#ferr").textContent="";
+  try{await AUTH.signInWithEmailAndPassword(FAMILY_EMAIL,pw)}
+  catch(err){$("#fgo").disabled=false;$("#ferr").textContent=(err&&err.code==="auth/network-request-failed")?"No internet just now. Connect and try again.":"That password didn't match. Check capital letters and try again."}};
+}
+function lockFamily(){location.hash="";try{AUTH&&AUTH.signOut()}catch(e){}familyIn=false;render()}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
+function route(){const h=(location.hash||"").slice(1);return ORDER.includes(h)||h==="parents"?h:"home"}
+window.addEventListener("hashchange",()=>{PLAY=null;render()});
+function go(h){location.hash=h?"#"+h:"";if(!h)render()}
+
+function render(fromData){
+ if(PLAY&&fromData)return; // don't interrupt a game
+ if(!familyIn){const el=$("#play");if(el)el.remove();PLAY=null;return renderLogin()}
+ const r=route();
+ document.body.style.background="";
+ if(r==="home")renderHome();
+ else if(r==="parents")renderParents();
+ else renderKid(r);
+}
+
+function statusLine(){
+ if(S.mode==="shared")return"Progress saves to the family record — Mum and Dad see it on any device.";
+ if(S.mode==="device")return"Saving on this device for now. It will join the family record when the internet is back.";
+ return"Connecting to the family record…";
+}
+
+/* ---------- Home ---------- */
+function renderHome(){
+ const today=dayStr();
+ $("#app").innerHTML=`<div class="wrap">
+  <div class="door-head"><div><h1>Zadokite Study Tool</h1>
+   <p class="muted">Pick your world. Do today's quests, win stars, and always ask: <b>so what?</b> — how does this change the world?</p></div>
+   <div class="status">${statusLine()}</div></div>
+  <div class="kids">${ORDER.map(k=>{const K=KIDS[k];return`<button class="kidcard k-${k}" data-go="${k}" aria-label="Open ${esc(nameOf(k))}'s world">
+     <canvas data-art="${k}"></canvas>
+     <div><div class="nm">${esc(nameOf(k))}</div><div class="cl">${esc(clsOf(k))}</div></div>
+     <div class="mini"><span>⭐ ${stars(k,today)} today</span><span>🔥 ${streak(k)} day${streak(k)===1?"":"s"}</span></div>
+   </button>`}).join("")}</div>
+  <div class="parentlink"><div><b style="font-family:var(--display);font-size:20px">Parents' room</b><div class="muted tiny">Progress, learning styles, weak spots and the road to aggregate 4.</div></div>
+   <div class="row"><button class="btn" data-go="parents">Open dashboard</button><button class="btn ghost" id="lockbtn">Lock</button></div></div>
+ </div>`;
+ bindGo();
+ document.querySelectorAll("canvas[data-art]").forEach(drawCardArt);
+}
+function bindGo(){const lb=$("#lockbtn");if(lb)lb.onclick=lockFamily;document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go))}
+
+function drawCardArt(c){
+ const k=c.dataset.art,w=c.width=c.offsetWidth*2,h=c.height=c.offsetHeight*2,x=c.getContext("2d");const r=rng(hash(k));
+ if(k==="levi"){for(let i=0;i<70;i++){x.fillStyle=`rgba(255,255,255,${.3+r()*.7})`;x.beginPath();x.arc(r()*w,r()*h,r()*2.4,0,7);x.fill()}
+  x.fillStyle="#ffb547";x.beginPath();x.arc(w*.82,h*.25,h*.13,0,7);x.fill();x.strokeStyle="rgba(255,213,150,.7)";x.lineWidth=5;x.beginPath();x.ellipse(w*.82,h*.25,h*.24,h*.06,-.3,0,7);x.stroke()}
+ if(k==="malaika"){const cols=["#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#3949ab","#8e24aa"];cols.forEach((col,i)=>{x.strokeStyle=col;x.lineWidth=h*.035;x.beginPath();x.arc(w*.85,h*1.05,h*(.62-i*.045),Math.PI,1.5*Math.PI+.4);x.stroke()});
+  x.globalAlpha=.15;x.strokeStyle="#3a2350";x.lineWidth=1.2;for(let i=-h;i<w;i+=9){x.beginPath();x.moveTo(i,h);x.lineTo(i+h*.6,0);x.stroke()}x.globalAlpha=1}
+ if(k==="daudi"){const bx=w*.82,by=h*.3,R=h*.17;x.fillStyle="#f26b1d";x.beginPath();x.arc(bx,by,R,0,7);x.fill();x.strokeStyle="#1d1d21";x.lineWidth=4;x.beginPath();x.arc(bx,by,R,0,7);x.moveTo(bx-R,by);x.lineTo(bx+R,by);x.moveTo(bx,by-R);x.lineTo(bx,by+R);x.stroke();x.beginPath();x.arc(bx-R*1.25,by,R*.95,-.9,.9);x.stroke();x.beginPath();x.arc(bx+R*1.25,by,R*.95,Math.PI-.9,Math.PI+.9);x.stroke();
+  x.strokeStyle="rgba(244,239,233,.18)";x.lineWidth=3;x.beginPath();x.arc(w,h,h*.7,Math.PI,1.5*Math.PI);x.stroke();
+  const cx2=w*.6,cy2=h*.86;x.fillStyle="rgba(242,107,29,.55)";x.beginPath();x.moveTo(cx2-80,cy2);x.lineTo(cx2-70,cy2-22);x.lineTo(cx2-30,cy2-34);x.lineTo(cx2+30,cy2-34);x.lineTo(cx2+70,cy2-16);x.lineTo(cx2+84,cy2);x.closePath();x.fill();x.fillStyle="#1d1d21";[cx2-48,cx2+50].forEach(t=>{x.beginPath();x.arc(t,cy2,15,0,7);x.fill()});x.fillStyle="#9a9aa3";[cx2-48,cx2+50].forEach(t=>{x.beginPath();x.arc(t,cy2,6,0,7);x.fill()})}
+ if(k==="malaika"){x.fillStyle="#f8c8dc";x.strokeStyle="#e8357a";x.lineWidth=3;[[.66,.62,.1,.38],[.86,.62,.1,.38],[.73,.72,.16,.28]].forEach(([a,b,c,d])=>{x.fillRect(w*a,h*b,w*c,h*d);x.strokeRect(w*a,h*b,w*c,h*d)});x.fillStyle="#e8357a";[[.66,.1],[.86,.1]].forEach(([a,c])=>{x.beginPath();x.moveTo(w*a,h*.62);x.lineTo(w*(a+c/2),h*.48);x.lineTo(w*(a+c),h*.62);x.fill()});
+  x.fillStyle="#e8357a";for(let i=0;i<8;i++){x.font=`${18+r()*14}px serif`;x.fillText("✦",w*.45+r()*w*.5,h*.1+r()*h*.4)}}
+ if(k==="israel"){x.fillStyle="#ff8a00";x.beginPath();x.arc(w*.86,h*.2,h*.12,0,7);x.fill();for(let i=0;i<12;i++){const a=i/12*6.28;x.strokeStyle="#ff8a00";x.lineWidth=5;x.beginPath();x.moveTo(w*.86+Math.cos(a)*h*.16,h*.2+Math.sin(a)*h*.16);x.lineTo(w*.86+Math.cos(a)*h*.22,h*.2+Math.sin(a)*h*.22);x.stroke()}
+  ["#e8357a","#8e24aa","#1e88e5"].forEach((c2,i)=>{const fx=w*(.62+i*.12),fy=h*.82;x.strokeStyle="#43a047";x.lineWidth=5;x.beginPath();x.moveTo(fx,h);x.lineTo(fx,fy);x.stroke();x.fillStyle=c2;for(let p=0;p<5;p++){const a=p/5*6.28;x.beginPath();x.arc(fx+Math.cos(a)*14,fy+Math.sin(a)*14,11,0,7);x.fill()}x.fillStyle="#fdd835";x.beginPath();x.arc(fx,fy,9,0,7);x.fill()})}
+}
+
+/* ---------- Kid world ---------- */
+function renderKid(k){
+ const K=KIDS[k],today=dayStr(),subs=SUBJECTS[k];
+ const done=subs.filter(s=>questDone(k,s[0],today)).length;
+ const crown=done===subs.length;
+ const fact=NATURE[(hash(today+k))%NATURE.length];
+ let bday="";
+ if(K.birthday){const diff=Math.round((new Date(K.birthday+"T00:00")-new Date(today+"T00:00"))/864e5);
+  if(diff===0)bday=`<div class="bday">🎂 Happy birthday ${esc(nameOf(k))}! You are ${K.turning} today!</div>`;
+  else if(diff>0&&diff<=7)bday=`<div class="bday">🎈 ${diff===1?"Tomorrow":diff+" sleeps until"} ${esc(nameOf(k))} turns ${K.turning}!</div>`}
+ const A=ADVENTURE[k];
+ $("#app").innerHTML=`<div class="world" data-kid="${k}">${k==="levi"?'<canvas id="stars"></canvas>':""}<div class="wrap">
+  <div class="topbar"><button class="back" data-go="">← Family</button><span class="tiny" style="opacity:.75">${esc(clsOf(k))}</span></div>
+  ${bday}
+  <div class="hello"><div><h1>${greet()} ${esc(nameOf(k))}</h1><div class="sub">${esc(K.theme)} · ${crown?"👑 All of today's quests done — champion!":`${done} of ${subs.length} quests done today`}</div></div>
+   <div class="chips">${(()=>{const L=levelOf(k);return`<span class="chip">Level ${L.lvl} · ${esc(L.rank)}</span>`})()}<span class="chip">⭐ ${stars(k,today)} today</span><span class="chip">🌟 ${stars(k)} total</span><span class="chip">🔥 ${streak(k)}-day streak</span></div></div>
+  ${levelBar(k)}
+  <div class="sect">Today's quests</div>
+  <div class="quests">${subs.map(([s,ic])=>{const d=questDone(k,s,today);return`<button class="quest ${d?"done":""}" data-quest="${s}">
+     <span class="ic">${ic}</span><span class="t">${s}</span><span class="s">${d?`✓ ${d.score}/${d.total} · play again`:k==="israel"?"Tap to play":"5 questions"}</span></button>`}).join("")}</div>
+  ${k==="malaika"?examCard(k):""}
+  <div class="sect">Arcade</div>
+  <div class="arcade">${ARCADE[k].map(g=>{const [ic,t,d]=ARCADE_INFO[g];const best=of(k).filter(a=>(a.style||a.mode)===g).reduce((m,a)=>Math.max(m,a.total?Math.round(a.score/a.total*100):0),0);
+    return`<button class="game" data-arc="${g}"><span class="gi">${ic}</span><span class="gt">${k==="israel"&&g==="match"?"Picture pairs":t}</span><span class="gs">${k==="israel"&&g==="match"?"Find two that are the same!":d}</span>${best?`<span class="gb">Best: ${best}%</span>`:""}</button>`}).join("")}</div>
+  <div class="sect">Games</div>
+  <div class="big2">
+   <div class="feature"><h3>${A.icon} ${A.title}</h3><p>${A.sub}</p><div><button class="btn" id="adv">Start</button></div></div>
+   ${k!=="israel"?`<div class="feature"><h3>${k==="malaika"?"✦ Crown Sprint":"🏎️ Pit-Stop Sprint"}</h3><p>60 seconds of maths. ${k==="malaika"?"Every right answer earns a sparkle.":"Every right answer drives your car closer to the flag."} Beat your best: <b>${bestSprint(k)}</b>.</p><div><button class="btn" id="sprint">Go!</button></div></div>`
+     :`<div class="feature"><h3>🔊 Listen &amp; tap</h3><p>Every question can be read aloud — press the speaker button and tap the picture.</p><div><button class="btn" data-quest="Counting">Count with me</button></div></div>`}
+  </div>
+  ${torahMoment(k,today)}
+  <div class="sect">Nature fact of the day</div>
+  <div class="fact"><b>🌿 Did you know?</b><div>${fact}</div>${k==="israel"?"":`<div class="tiny" style="margin-top:6px;opacity:.8"><b>So what?</b> Tell someone at dinner how this connects to something you learned today.</div>`}</div>
+ </div></div>`;
+ bindGo();
+ document.querySelectorAll("[data-quest]").forEach(b=>b.onclick=()=>startPlay(k,b.dataset.quest,"quest"));
+ $("#adv").onclick=()=>startPlay(k,"__mix","adventure");
+ if(k==="malaika")bindExam(k);
+ document.querySelectorAll("[data-arc]").forEach(b=>b.onclick=()=>startArcade(k,b.dataset.arc));
+ const sp=$("#sprint");if(sp)sp.onclick=()=>startSprint(k);
+ if(k==="levi")drawStars();
+}
+function topicMisses(k){const bank=BANK[k].Topic;const seen=new Set();const out=[];
+ for(const a of of(k).slice().sort((x,y)=>y.ts-x.ts)){for(const m of a.missed||[]){if(!m.startsWith("Topic: "))continue;const t=m.slice(7);const q=bank.find(b=>b.q.slice(0,90)===t);if(q&&!seen.has(q.q)){seen.add(q.q);out.push(q)}}}return out.slice(0,15)}
+function examCard(k){const th=Object.keys(TOPIC_THEMES);const miss=topicMisses(k);
+ return`<div class="sect">📝 Topic exam practice</div><div class="feature"><h3>Term 3 Topic revision</h3>
+  <p>Questions from this term's themes: Transport, Communication, Things We Make, Our Environment, and Peace &amp; Security.</p>
+  <div class="row"><button class="btn" data-exam="__all">Full practice · 20 questions</button>${miss.length?`<button class="btn" data-exam="__miss" style="background:#8e24aa">Fix my mistakes · ${miss.length}</button>`:""}</div>
+  <div class="row">${th.map(t=>`<button class="back" data-exam="${esc(t)}">${esc(t)} · ${TOPIC_THEMES[t].length}</button>`).join("")}</div></div>`}
+function bindExam(k){document.querySelectorAll("[data-exam]").forEach(b=>b.onclick=()=>{const v=b.dataset.exam;
+ if(v==="__all")return startPlay(k,"Topic","exam",BANK[k].Topic.filter(q=>q.theme!=="Living things & health"),{title:"Topic practice",n:20});
+ if(v==="__miss")return startPlay(k,"Topic","exam",topicMisses(k),{title:"Fix my mistakes"});
+ startPlay(k,"Topic","exam",TOPIC_THEMES[v].map(q=>({...q,theme:v})),{title:v})})}
+function levelBar(k){const L=levelOf(k);if(!L.next)return"";const pct=Math.round((L.xp-L.from)/(L.next-L.from)*100);const tu=tierUnlocked(k);
+ const unlock=L.lvl<3?"World Ahead tier 2 unlocks at Level 3":L.lvl<5?"World Ahead tier 3 unlocks at Level 5":"Every level adds more stretch questions from the class ahead";
+ return`<div class="feature" style="padding:14px 18px;gap:6px"><div class="row" style="justify-content:space-between"><b style="font-family:var(--display);font-size:18px">Level ${L.lvl} → ${L.lvl+1}: ${esc(RANKS[k][L.lvl]||"")}</b><span class="tiny">${L.xp} / ${L.next} stars</span></div>
+  <div style="height:12px;border-radius:8px;background:var(--w-soft);overflow:hidden"><i style="display:block;height:100%;width:${pct}%;background:var(--w-acc);border-radius:8px"></i></div>
+  <div class="tiny" style="opacity:.85">${k==="israel"?"Every right answer helps your garden grow!":`More wins = more unlocks. ${unlock}. World Ahead tier ${tu} of 3 open.`}</div></div>`}
+function torahMoment(k,today){const f=TORAH_FACTS[hash(today)%TORAH_FACTS.length];
+ const wd=new Date(today+"T00:00").getDay();
+ const dayNote=wd===1||wd===4?"Today is a "+(wd===1?"Monday":"Thursday")+" — one of the days the Torah is read aloud.":wd===5?"Today is Friday — Shabbat begins at sunset.":wd===6?"Today is Shabbat.":"";
+ return`<div class="torah"><b>📜 Torah fact of the day</b><div>${esc(f)}</div>${dayNote?`<div class="tiny" style="margin-top:6px;opacity:.85">${esc(dayNote)}</div>`:""}</div>`}
+function greet(){const h=new Date().getHours();return h<12?"Good morning,":h<17?"Good afternoon,":"Good evening,"}
+function bestSprint(k){return of(k).filter(a=>a.mode==="sprint").reduce((m,a)=>Math.max(m,a.score),0)}
+function drawStars(){const c=$("#stars");if(!c)return;c.width=innerWidth;c.height=innerHeight;const x=c.getContext("2d"),r=rng(7);for(let i=0;i<160;i++){x.fillStyle=`rgba(255,255,255,${.2+r()*.8})`;x.beginPath();x.arc(r()*c.width,r()*c.height,r()*1.6,0,7);x.fill()}}
+
+/* =========================================================
+   PLAY (quests + adventures)
+   ========================================================= */
+function startPlay(kid,subject,mode,pool,label){
+ const today=dayStr();const n=mode==="adventure"?ADVENTURE[kid].n:5;
+ const prior=of(kid).filter(a=>a.day===today&&a.subject===(subject==="__mix"?"Adventure":subject)).length;
+ let qs;
+ if(pool){const r=rng(Date.now());qs=shuffle(r,pool).slice(0,label&&label.n||pool.length).map(q=>({...q,subject:q.subject||subject,order:q.order||shuffle(r,[...q.opts.keys()])}))}
+ else qs=buildSet(kid,subject,n,`${kid}|${subject}|${today}|${prior}`);
+ PLAY={kid,subject,mode,qs,i:0,score:0,missed:[],answered:false,results:[],label:label&&label.title,pool,poolLabel:label,t0:Date.now(),fresh:label&&label.fresh};
+ if(label&&label.fresh)PLAY.qs=label.fresh();
+ drawPlay();
+}
+function optLabel(o){if(o.includes("|")){const [e,w]=o.split("|");return`<span class="em">${e}</span>${esc(w)}`}return esc(o)}
+function drawPlay(){
+ const P=PLAY,k=P.kid,q=P.qs[P.i];
+ const title=P.label||(P.mode==="adventure"?ADVENTURE[k].title:P.subject);
+ let el=$("#play");if(!el){el=document.createElement("div");el.id="play";document.body.appendChild(el)}
+ el.className="play";el.dataset.kid=k;el.closest||0;
+ el.setAttribute("style","");
+ const w=document.querySelector(".world");
+ for(const v of ["--w-bg","--w-fg","--w-card","--w-acc","--w-acc-ink","--w-soft","--w-line"])el.style.setProperty(v,getComputedStyle(w).getPropertyValue(v));
+ if(P.i>=P.qs.length){return finishPlay()}
+ let show="";
+ if(q.show)show=`<div class="qshow" aria-label="${q.show.length} pictures">${q.show}</div>`;
+ if(q.swatch)show=`<div class="swatch" style="background:${q.swatch}"></div>`;
+ if(q.shape)show=shapeSVG(q.shape);
+ el.innerHTML=`<div class="inner">
+  <div class="play-head"><h2>${esc(title)}</h2><button class="back" id="quit">✕ Stop</button></div>
+  <div class="vis">${visual(k,P)}</div>
+  <div class="qcard">
+   <div class="row" style="justify-content:space-between"><span class="qnum">Question ${P.i+1} of ${P.qs.length}${q.section?" · "+q.section:P.mode==="adventure"?" · "+q.subject:q.theme&&P.mode==="exam"?" · "+q.theme:""}</span>${canSpeak()?`<button class="speak" id="say">🔊 Read it</button>`:""}</div>
+   ${q.stretch?`<div class="qnum" style="color:var(--w-acc)">🚀 Stretch question — from the class ahead</div>`:""}<div class="qtext">${esc(q.q)}</div>${show}
+   <div class="opts">${q.order.map(i=>`<button class="opt" data-i="${i}">${optLabel(q.opts[i])}</button>`).join("")}</div>
+   <div id="fb"></div>
+  </div></div>`;
+ $("#quit").onclick=()=>{el.remove();PLAY=null;render()};
+ const sb=$("#say");if(sb)sb.onclick=()=>speak(q.say||q.q);
+ if(k==="israel")speak(q.say||q.q);
+ el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+ el.scrollTop=0;
+}
+function answer(i){
+ const P=PLAY;if(P.answered)return;P.answered=true;const q=P.qs[P.i],ok=i===0;
+ document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;const j=+b.dataset.i;if(j===0)b.classList.add("right");else if(j===i)b.classList.add("wrong")});
+ if(ok)P.score++;else P.missed.push(`${q.subject}: ${q.q.slice(0,90)}`);
+ P.results.push({s:q.subject,ok});
+ const cheers=P.kid==="israel"?["Yay!","Super!","Clever you!","Well done!"]:P.kid==="malaika"?["Brilliant, Princess!","You're a shining star!","Royal thinking!","Sparkling — yes!"]:P.kid==="levi"?["Engines firing!","Mission success!","Out of this world!","Spot on, commander!"]:["Swish!","Nothing but net.","Sharp.","Three-pointer!"];
+ const tries=P.kid==="israel"?["Nearly! Let's look again.","Good try!"]:["Not this time —","Close —"];
+ const correctText=q.opts[0].includes("|")?q.opts[0].split("|")[1]:q.opts[0];
+ $("#fb").innerHTML=`<div class="fb pop"><div class="ok">${ok?pick(Math.random,cheers):pick(Math.random,tries)+(P.kid==="israel"?"":" the answer is "+esc(correctText)+".")}</div>
+  <div>${esc(q.why)}</div>${q.w?`<div class="sowhat"><b>${P.kid==="israel"?"🌍 ":"🌍 So what?"}</b> ${esc(q.w)}</div>`:""}
+  <div style="margin-top:12px"><button class="btn" id="next">${P.i+1<P.qs.length?"Next →":"See my stars"}</button></div></div>`;
+ if(P.kid==="israel")speak(ok?"Yay! "+q.why:"Nearly! "+q.why);
+ document.querySelector(".vis").innerHTML=visual(P.kid,P,true);
+ const nb=$("#next");nb.onclick=()=>{P.i++;P.answered=false;drawPlay()};nb.focus();
+}
+async function finishPlay(){
+ const P=PLAY,k=P.kid,el=$("#play");
+ const bySubject={};for(const r of P.results){bySubject[r.s]=bySubject[r.s]||[0,0];bySubject[r.s][1]++;if(r.ok)bySubject[r.s][0]++}
+ const a={child:k,subject:P.mode==="adventure"?"Adventure":P.subject,mode:P.mode,style:P.mode,score:P.score,total:P.qs.length,missed:P.missed.slice(0,8),bySubject,day:dayStr(),ts:Date.now(),dur:Date.now()-(P.t0||Date.now())};
+ const pct=P.score/P.qs.length;
+ const msg=pct===1?"Perfect score!":pct>=.8?"Excellent work!":pct>=.5?"Good effort — practise once more to master it.":"Every expert started here. Try again!";
+ el.innerHTML=`<div class="inner"><div class="vis">${visual(k,P,true,true)}</div>
+  <div class="qcard result pop"><div class="big">⭐ ${P.score}/${P.qs.length}</div><h2 style="margin:10px 0 6px">${msg}</h2>
+  ${P.missed.length&&k!=="israel"?`<p class="tiny">Ask Mum or Dad about: ${esc(P.missed[0].split(": ")[0])} — and tell them the "so what".</p>`:""}
+  <div class="row" style="justify-content:center;margin-top:14px"><button class="btn" id="again">Play again</button><button class="back" id="home">Back to my world</button></div>
+  <div class="status" id="savest" style="margin-top:10px">Saving your stars…</div></div></div>`;
+ if(k==="israel")speak(msg);
+ $("#again").onclick=()=>{const {kid,subject,mode,pool,poolLabel}=P;startPlay(kid,subject,mode,pool,poolLabel)};
+ $("#home").onclick=()=>{el.remove();PLAY=null;render()};
+ const before=levelOf(k).lvl;
+ await saveAttempt(a);
+ const st=$("#savest");if(st)st.textContent=S.mode==="shared"?"Stars saved to the family record.":"Stars saved on this device.";
+ setTimeout(()=>{const after=levelOf(k);if(after.lvl>before&&st)st.innerHTML=`<b style="font-size:20px;color:var(--w-acc)">🎉 LEVEL UP! You are now Level ${after.lvl}: ${esc(after.rank)}</b>`},1500);
+}
+
+/* ---------- themed progress visuals ---------- */
+function visual(k,P,afterAnswer,final){
+ const n=P.qs.length,res=P.results,okCount=res.filter(r=>r.ok).length;
+ if(k==="levi"){const pl=[["Mercury","#b0a89c",6],["Venus","#e8c27a",8],["Earth","#3f8fe0",8],["Mars","#d4553a",7],["Jupiter","#d9a86c",15],["Saturn","#e3c98a",13],["Uranus","#8fd3e0",10],["Neptune","#4a6fe0",10]];
+  const W=640,H=120,step=(W-80)/(pl.length-1);const pos=Math.min(okCount,pl.length-1);
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Rocket at planet ${pos+1} of 8"><rect width="${W}" height="${H}" fill="#080c26"/>
+   <line x1="40" y1="70" x2="${W-40}" y2="70" stroke="#2d3878" stroke-width="2" stroke-dasharray="4 6"/>
+   ${pl.map((p,i)=>`<circle cx="${40+i*step}" cy="70" r="${p[2]}" fill="${p[1]}" opacity="${i<=okCount?1:.35}"/>${p[0]==="Saturn"?`<ellipse cx="${40+i*step}" cy="70" rx="${p[2]+8}" ry="4" fill="none" stroke="#e3c98a" stroke-width="2" opacity="${i<=okCount?1:.35}"/>`:""}<text x="${40+i*step}" y="105" text-anchor="middle" font-size="11" fill="#c9d0ff">${p[0]}</text>`).join("")}
+   <g transform="translate(${40+pos*step-10},28)" style="transition:transform .6s"><text font-size="26">🚀</text></g></svg>`}
+ if(k==="malaika"){const cols=["#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#3949ab","#8e24aa"],W=640,H=200,cx=320,cy=196;
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${okCount} rainbow bands painted"><defs>${cols.map((c,i)=>`<pattern id="h${i}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(${30+i*15})"><rect width="8" height="8" fill="${c}"/><line x1="0" y1="0" x2="0" y2="8" stroke="#000" stroke-opacity=".18" stroke-width="3"/></pattern>`).join("")}</defs>
+   <rect width="${W}" height="${H}" fill="#fff6fa"/>${cols.slice(0,Math.max(n,7)).map((c,i)=>{const R=180-i*20;const painted=i<okCount;return`<path d="M ${cx-R} ${cy} A ${R} ${R} 0 0 1 ${cx+R} ${cy}" fill="none" stroke="${painted?`url(#h${i})`:"#f3dbe6"}" stroke-width="18" stroke-linecap="round"/>`}).join("")}
+   <g fill="#f8c8dc" stroke="#e8357a" stroke-width="2"><rect x="270" y="120" width="100" height="76"/><rect x="250" y="100" width="28" height="96"/><rect x="362" y="100" width="28" height="96"/><rect x="306" y="88" width="28" height="40"/></g>
+   <g fill="#e8357a"><polygon points="250,100 264,74 278,100"/><polygon points="362,100 376,74 390,100"/><polygon points="306,88 320,58 334,88"/></g>
+   <path d="M308 196 v-26 a12 12 0 0 1 24 0 v26z" fill="#8e24aa"/>
+   ${okCount>=7?`<text x="320" y="52" text-anchor="middle" font-size="26">👑</text>`:""}
+   ${Array.from({length:okCount},(_,i)=>`<text x="${60+i*80}" y="${30+(i%2)*20}" font-size="16" fill="#e8357a">✦</text>`).join("")}
+   <text x="20" y="190" font-family="Baloo 2,sans-serif" font-size="18" font-weight="700" fill="#3a2350">${n>7?`${okCount} right of ${n}`:`${okCount} of 7 colours`}</text></svg>`}
+ if(k==="daudi"){const W=640,H=170,last=res[res.length-1];const pts=okCount*2;
+  const shots=res.map((r,i)=>`<circle cx="${30+i*22}" cy="150" r="8" fill="${r.ok?"#f26b1d":"#55555e"}"/>`).join("");
+  const arc=afterAnswer&&last?`<path d="M120 140 Q 330 -20 ${last.ok?505:530} ${last.ok?62:40}" fill="none" stroke="#f26b1d" stroke-width="3" stroke-dasharray="6 6"/>`:"";
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Score ${pts} points"><rect width="${W}" height="${H}" fill="#1d1d21"/>
+   <path d="M0 165 H${W}" stroke="#c9884f" stroke-width="10"/><path d="M380 165 A140 110 0 0 1 640 165" fill="none" stroke="#f4efe9" stroke-opacity=".35" stroke-width="2"/>
+   <rect x="540" y="20" width="6" height="140" fill="#9a9aa3"/><rect x="510" y="22" width="60" height="38" fill="none" stroke="#f4efe9" stroke-width="3"/>
+   <line x1="482" y1="62" x2="528" y2="62" stroke="#f26b1d" stroke-width="4"/><path d="M486 64 L494 86 L516 86 L524 64" fill="none" stroke="#f4efe9" stroke-opacity=".7" stroke-width="2"/>
+   ${arc}<circle cx="${afterAnswer&&last?(last.ok?505:530):120}" cy="${afterAnswer&&last?(last.ok?78:40):140}" r="11" fill="#f26b1d" stroke="#1d1d21" stroke-width="2"/>
+   <rect x="20" y="16" width="190" height="64" rx="8" fill="#000"/><text x="34" y="40" font-family="Baloo 2,sans-serif" font-size="14" fill="#f26b1d" letter-spacing="2">HOME</text>
+   <text x="34" y="72" font-family="Baloo 2,sans-serif" font-size="34" font-weight="800" fill="#ffd27a">${String(pts).padStart(2,"0")}</text>
+   <text x="110" y="40" font-family="Baloo 2,sans-serif" font-size="14" fill="#9a9aa3" letter-spacing="2">SHOT</text><text x="110" y="72" font-family="Baloo 2,sans-serif" font-size="34" font-weight="800" fill="#f4efe9">${Math.min(P.i+1,n)}/${n}</text>
+   ${afterAnswer&&last?`<text x="300" y="60" font-family="Baloo 2,sans-serif" font-size="30" font-weight="800" fill="${last.ok?"#ffd27a":"#9a9aa3"}">${last.ok?"SWISH! +2":"Rim out"}</text>`:""}
+   ${shots}${final?`<text x="300" y="120" font-family="Baloo 2,sans-serif" font-size="22" font-weight="700" fill="#f4efe9">${pts>=20?"Perfect game!":pts>=14?"You won the game!":"Final buzzer — run it back!"}</text>`:""}</svg>`}
+ /* israel */
+ const W=640,H=130;return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${okCount} flowers bloomed"><rect width="${W}" height="${H}" fill="#fff1c2"/><rect y="110" width="${W}" height="20" fill="#8bc34a"/>
+  ${Array.from({length:n},(_,i)=>{const x=60+i*((W-120)/(n-1||1)),bloom=i<okCount,c=["#e8357a","#8e24aa","#1e88e5","#ff6a00","#e53935","#43a047"][i%6];
+   return`<line x1="${x}" y1="112" x2="${x}" y2="${bloom?55:90}" stroke="#43a047" stroke-width="5"/>${bloom?[0,1,2,3,4].map(p=>{const a=p/5*6.28;return`<circle cx="${x+Math.cos(a)*15}" cy="${55+Math.sin(a)*15}" r="12" fill="${c}"/>`}).join("")+`<circle cx="${x}" cy="55" r="9" fill="#fdd835"/>`:`<circle cx="${x}" cy="88" r="7" fill="#7cb342"/>`}`}).join("")}</svg>`;
+}
+function shapeSVG(s){const f="#ff6a00";const m={circle:`<circle cx="60" cy="60" r="50" fill="${f}"/>`,square:`<rect x="12" y="12" width="96" height="96" fill="${f}"/>`,triangle:`<polygon points="60,8 112,108 8,108" fill="${f}"/>`,rectangle:`<rect x="4" y="30" width="112" height="60" fill="${f}"/>`,
+ star:`<polygon points="60,6 74,44 114,44 82,68 94,108 60,84 26,108 38,68 6,44 46,44" fill="${f}"/>`,heart:`<path d="M60 106 C10 70 4 40 26 22 C42 10 56 18 60 30 C64 18 78 10 94 22 C116 40 110 70 60 106Z" fill="${f}"/>`};
+ return`<svg class="shape" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="a shape">${m[s]}</svg>`}
+function canSpeak(){try{return"speechSynthesis"in window}catch(e){return false}}
+function speak(t){try{if(!canSpeak())return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.9;u.lang="en-GB";speechSynthesis.speak(u)}catch(e){}}
+
+/* ---------- Arcade launchers ---------- */
+function startArcade(k,g){
+ if(g==="exam")return startPlay(k,"Practice exam","exam",[1],{title:"Practice exam",fresh:()=>buildExam(k)});
+ if(g==="tf")return startPlay(k,"True/False","tf",[1],{title:"True/False blitz",fresh:()=>buildTF(k)});
+ if(g==="sowhat")return startPlay(k,"So What?","sowhat",[1],{title:"So What? challenge",fresh:()=>buildSW(k)});
+ if(g==="scramble")return startScramble(k);
+ if(g==="match")return startMatch(k);
+}
+function overlay(k){let el=$("#play");if(!el){el=document.createElement("div");el.id="play";document.body.appendChild(el)}
+ el.className="play";el.dataset.kid=k;const w=document.querySelector(".world");
+ for(const v of ["--w-bg","--w-fg","--w-card","--w-acc","--w-acc-ink","--w-soft","--w-line"])el.style.setProperty(v,getComputedStyle(w).getPropertyValue(v));return el}
+function closeOverlay(){const el=$("#play");if(el)el.remove();PLAY=null;render()}
+async function endGame(k,style,subject,score,total,missed,title,detail,bySubject,t0,again){
+ const el=$("#play");const pct=total?Math.round(score/total*100):0;
+ el.innerHTML=`<div class="inner"><div class="qcard result pop"><div class="big">${pct>=80?"🏆":"⭐"} ${score}/${total}</div><h2 style="margin:10px 0 6px">${pct===100?"Perfect!":pct>=80?"Excellent!":pct>=50?"Good work — once more to master it.":"Keep going — every round makes your brain stronger."}</h2>
+  <p>${esc(detail||"")}</p><div class="row" style="justify-content:center"><button class="btn" id="again">Play again</button><button class="back" id="home">Back to my world</button></div><div class="status" id="savest">Saving…</div></div></div>`;
+ $("#again").onclick=again;$("#home").onclick=closeOverlay;
+ await saveAttempt({child:k,subject,mode:style,style,score,total,missed:(missed||[]).slice(0,8),bySubject:bySubject||{[subject]:[score,total]},day:dayStr(),ts:Date.now(),dur:Date.now()-t0});
+ const st=$("#savest");if(st)st.textContent=S.mode==="shared"?"Saved to the family record.":"Saved on this device.";
+}
+
+/* ---------- Word scramble ---------- */
+function startScramble(k){
+ const r=rng(Date.now());const words=shuffle(r,scrambleWords(k)).slice(0,8);
+ if(words.length<3)return;
+ const G={kid:k,words,i:0,score:0,missed:[],t0:Date.now(),by:{}};PLAY=G;const el=overlay(k);
+ const draw=()=>{
+  if(G.i>=G.words.length)return endGame(k,"scramble","Word scramble",G.score,G.words.length,G.missed,"Word scramble",`${G.score} words unscrambled.`,G.by,G.t0,()=>startScramble(k));
+  const w=G.words[G.i];let letters;do{letters=shuffle(r,w.word.split(""))}while(letters.join("")===w.word&&w.word.length>1);
+  G.tiles=letters.map((c,i)=>({c,i,used:false}));G.picked=[];G.revealed=false;
+  paint();
+ };
+ const paint=()=>{const w=G.words[G.i];
+  el.innerHTML=`<div class="inner"><div class="play-head"><h2>🔤 Word scramble</h2><button class="back" id="quit">✕ Stop</button></div>
+  <div class="qcard"><div class="qnum">Word ${G.i+1} of ${G.words.length} · ${esc(w.subject)} · ⭐ ${G.score}</div>
+   <div class="qtext" style="font-size:20px">Clue: ${esc(w.hint)}</div>
+   <div class="slots">${w.word.split("").map((_,i)=>`<span class="slot">${G.picked[i]?esc(G.tiles[G.picked[i]-1].c):""}</span>`).join("")}</div>
+   <div class="tiles">${G.tiles.map((t,i)=>`<button class="tile" data-t="${i}" ${t.used||G.revealed?"disabled":""}>${esc(t.c)}</button>`).join("")}</div>
+   <div class="row" style="justify-content:center;margin-top:12px"><button class="back" id="undo">↶ Undo</button><button class="back" id="clr">Clear</button><button class="back" id="show">Show me</button></div>
+   <div id="fb"></div></div></div>`;
+  $("#quit").onclick=closeOverlay;
+  el.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const i=+b.dataset.t;G.tiles[i].used=true;G.picked.push(i+1);check()});
+  $("#undo").onclick=()=>{const last=G.picked.pop();if(last)G.tiles[last-1].used=false;paint()};
+  $("#clr").onclick=()=>{G.picked=[];G.tiles.forEach(t=>t.used=false);paint()};
+  $("#show").onclick=()=>{G.revealed=true;G.missed.push(`${w.subject}: ${w.hint.slice(0,90)}`);tally(w,false);feedback(false)};
+ };
+ const tally=(w,ok)=>{G.by[w.subject]=G.by[w.subject]||[0,0];G.by[w.subject][1]++;if(ok)G.by[w.subject][0]++};
+ const check=()=>{const w=G.words[G.i];if(G.picked.length<w.word.length)return paint();
+  const guess=G.picked.map(p=>G.tiles[p-1].c).join("");
+  if(guess===w.word){G.score++;tally(w,true);G.revealed=true;feedback(true)}else{paint();$("#fb").innerHTML=`<div class="fb pop"><div class="ok">Not quite — try again or tap Clear.</div></div>`}};
+ const feedback=ok=>{paint();const w=G.words[G.i];
+  $("#fb").innerHTML=`<div class="fb pop"><div class="ok">${ok?"You got it!":"The word is"} <span style="text-transform:uppercase">${esc(w.word)}</span></div><div>${esc(w.why)}</div>${w.w?`<div class="sowhat"><b>🌍 So what?</b> ${esc(w.w)}</div>`:""}<div style="margin-top:10px"><button class="btn" id="next">Next →</button></div></div>`;
+  $("#next").onclick=()=>{G.i++;draw()};$("#next").focus()};
+ draw();
+}
+
+/* ---------- Memory match ---------- */
+function startMatch(k){
+ const r=rng(Date.now());let pairs;
+ if(k==="israel"){const E=shuffle(r,["🍎","🍌","🚗","🚌","🐄","🦁","🌸","⭐","🐟","🦒","🚜","🌈"]).slice(0,6);pairs=E.map((e,i)=>({id:i,a:`<span class="em">${e}</span>`,b:`<span class="em">${e}</span>`,subject:"Pairs"}))}
+ else{const pool=shuffle(r,poolOf(k).filter(q=>q.q.length<=70&&cleanOpt(q.opts[0]).length<=28));pairs=pool.slice(0,6).map((q,i)=>({id:i,a:esc(q.q),b:esc(cleanOpt(q.opts[0])),subject:q.subject,why:q.why,w:q.w}))}
+ const cards=shuffle(r,pairs.flatMap(p=>[{id:p.id,html:p.a},{id:p.id,html:p.b}]));
+ const G={kid:k,cards,up:[],got:new Set(),moves:0,t0:Date.now(),last:null};PLAY=G;const el=overlay(k);
+ const paint=()=>{el.innerHTML=`<div class="inner"><div class="play-head"><h2>🃏 ${k==="israel"?"Picture pairs":"Memory match"}</h2><button class="back" id="quit">✕ Stop</button></div>
+  <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="chip">Pairs ${G.got.size}/${pairs.length}</span><span class="chip">Moves ${G.moves}</span></div>
+  <div class="mgrid">${G.cards.map((c,i)=>{const up=G.up.includes(i),got=G.got.has(c.id);return`<button class="mcard ${got?"got":up?"up":""}" data-c="${i}" ${got?"disabled":""} aria-label="${up||got?"card":"face-down card"}">${up||got?c.html:(k==="israel"?"?":"✦")}</button>`}).join("")}</div>
+  <div id="fb"></div></div>`;
+  $("#quit").onclick=closeOverlay;
+  el.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>flip(+b.dataset.c));
+  if(G.last&&k!=="israel"&&G.last.w)$("#fb").innerHTML=`<div class="fb pop"><div class="ok">Match!</div><div>${esc(G.last.why)}</div><div class="sowhat"><b>🌍 So what?</b> ${esc(G.last.w)}</div></div>`;
+ };
+ const flip=i=>{if(G.busy||G.up.includes(i))return;G.up.push(i);G.last=null;
+  if(G.up.length===2){G.moves++;const [x,y]=G.up;
+   if(G.cards[x].id===G.cards[y].id){G.got.add(G.cards[x].id);G.last=pairs[G.cards[x].id];G.up=[];if(k==="israel")speak("Well done! A pair!");
+     if(G.got.size===pairs.length){paint();setTimeout(()=>endGame(k,"match",k==="israel"?"Pairs":"Memory match",pairs.length,G.moves,[],"",`${pairs.length} pairs in ${G.moves} moves. Fewer moves = stronger memory.`,null,G.t0,()=>startMatch(k)),700);return}}
+   else{G.busy=true;paint();setTimeout(()=>{G.up=[];G.busy=false;paint()},1100);return}}
+  paint()};
+ paint();
+}
+
+/* ---------- Math sprint ---------- */
+function startSprint(k){
+ PLAY={kid:k,mode:"sprint",score:0,tries:0,end:Date.now()+60000,missed:[]};
+ let el=$("#play");if(!el){el=document.createElement("div");el.id="play";document.body.appendChild(el)}
+ el.className="play";el.dataset.kid=k;const w=document.querySelector(".world");
+ for(const v of ["--w-bg","--w-fg","--w-card","--w-acc","--w-acc-ink","--w-soft","--w-line"])el.style.setProperty(v,getComputedStyle(w).getPropertyValue(v));
+ const r=rng(Date.now());
+ const next=()=>{
+  if(!PLAY)return;const left=Math.max(0,Math.ceil((PLAY.end-Date.now())/1000));
+  if(left<=0)return endSprint();
+  const q=pick(r,GEN[k])(r);const order=shuffle(r,[0,1,2,3]);
+  el.innerHTML=`<div class="inner"><div class="play-head"><h2>⚡ Math Sprint</h2><button class="back" id="quit">✕ Stop</button></div>
+   <div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="timer" id="tm">${left}s</span><span class="chip">✓ ${PLAY.score} right</span></div>
+   ${sprintVis(k,PLAY.score,left)}
+   <div class="qcard"><div class="qtext">${esc(q.q)}</div><div class="opts">${order.map(i=>`<button class="opt" data-i="${i}">${esc(q.opts[i])}</button>`).join("")}</div></div></div>`;
+  $("#quit").onclick=()=>{clearInterval(PLAY.tick);el.remove();PLAY=null;render()};
+  el.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{PLAY.tries++;if(+b.dataset.i===0)PLAY.score++;else PLAY.missed.push("Mathematics: "+q.q);b.classList.add(+b.dataset.i===0?"right":"wrong");setTimeout(next,220)});
+ };
+ PLAY.tick=setInterval(()=>{const t=$("#tm");if(!PLAY){return}const left=Math.max(0,Math.ceil((PLAY.end-Date.now())/1000));if(t)t.textContent=left+"s";if(left<=0)endSprint()},250);
+ next();
+}
+function sprintVis(k,sc,left){const W=640,H=70;
+ if(k==="malaika")return`<div class="vis"><svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#fff6fa"/>${Array.from({length:Math.min(sc,24)},(_,i)=>`<text x="${12+i*26}" y="44" font-size="22">${i%3===2?"👑":"✦"}</text>`).join("")}</svg></div>`;
+ const x=20+Math.min(sc,30)/30*(W-90);
+ return`<div class="vis"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Race car at ${sc} points"><rect width="${W}" height="${H}" fill="${k==="levi"?"#141b45":"#1d1d21"}"/><rect y="26" width="${W}" height="30" fill="#2c2c33"/><line x1="0" y1="41" x2="${W}" y2="41" stroke="#f4efe9" stroke-dasharray="14 12" stroke-opacity=".5"/>
+  <rect x="${W-30}" y="26" width="10" height="30" fill="#fff"/><rect x="${W-30}" y="26" width="5" height="7.5" fill="#000"/><rect x="${W-25}" y="33.5" width="5" height="7.5" fill="#000"/><rect x="${W-30}" y="41" width="5" height="7.5" fill="#000"/><rect x="${W-25}" y="48.5" width="5" height="7.5" fill="#000"/>
+  <text x="${x}" y="50" font-size="30" transform="scale(-1,1) translate(${-2*x-36},0)">🏎️</text><text x="10" y="18" font-size="12" fill="#c9d0ff">Lap to 30 · ${sc} correct</text></svg></div>`}
+async function endSprint(){
+ const P=PLAY;if(!P||P.ended)return;P.ended=true;clearInterval(P.tick);const el=$("#play"),k=P.kid,best=bestSprint(k);
+ el.innerHTML=`<div class="inner"><div class="qcard result pop"><div class="big">⚡ ${P.score}</div><h2 style="margin:10px 0 6px">${P.score>best?"New personal best!":"Sprint finished"}</h2>
+  <p>${P.score} right out of ${P.tries} tries${best&&P.score<=best?` · your best is ${best}`:""}.</p>
+  <div class="row" style="justify-content:center"><button class="btn" id="again">Sprint again</button><button class="back" id="home">Back</button></div><div class="status" id="savest">Saving…</div></div></div>`;
+ $("#again").onclick=()=>startSprint(k);$("#home").onclick=()=>{el.remove();PLAY=null;render()};
+ await saveAttempt({child:k,subject:"Mathematics",mode:"sprint",style:"sprint",dur:60000,score:P.score,total:Math.max(P.tries,1),missed:P.missed.slice(0,6),bySubject:{Mathematics:[P.score,Math.max(P.tries,1)]},day:dayStr(),ts:Date.now()});
+ const st=$("#savest");if(st)st.textContent="Saved.";
+}
+
+/* =========================================================
+   PARENTS' ROOM
+   ========================================================= */
+function renderParents(){
+ const today=dayStr();
+ const week=[...Array(7)].map((_,i)=>daysBack(6-i));
+ $("#app").innerHTML=`<div class="wrap">
+  <div class="pr-head"><div><button class="btn ghost" data-go="" style="margin-bottom:10px">← Family</button><h1>Parents' room</h1>
+   <div class="muted">${new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} · ${statusLine()}</div></div></div>
+  <div class="pgrid">${ORDER.map(k=>kidPanel(k,today,week)).join("")}</div>
+  <div class="feed"><div class="lbl" style="margin:6px 0">Latest activity</div><div class="feedwrap"><table><thead><tr><th>When</th><th>Child</th><th>Activity</th><th>Score</th></tr></thead><tbody>
+   ${S.attempts.slice().sort((a,b)=>b.ts-a.ts).slice(0,14).map(a=>`<tr><td>${new Date(a.ts).toLocaleString("en-GB",{weekday:"short",hour:"2-digit",minute:"2-digit"})}</td><td>${esc(nameOf(a.child))}</td><td>${esc(a.subject)} <span class="muted tiny">${a.mode}</span></td><td>${a.score}/${a.total}</td></tr>`).join("")||`<tr><td colspan="4" class="muted">No activity yet. When the children finish a quest, it appears here.</td></tr>`}
+  </tbody></table></div></div>
+  <form class="set" id="setf"><div style="grid-column:1/-1"><b style="font-family:var(--display);font-size:20px">Settings</b></div>
+   ${ORDER.map(k=>`<label>${esc(KIDS[k].name)} · name<input id="n-${k}" value="${esc(nameOf(k))}"></label><label>${esc(KIDS[k].name)} · class &amp; school<input id="c-${k}" value="${esc(clsOf(k))}"></label>`).join("")}
+   <div><button class="btn" type="submit">Save settings</button> <span class="tiny" id="setmsg"></span></div></form>
+ </div>`;
+ bindGo();
+ $("#setf").onsubmit=async e=>{e.preventDefault();const names={};ORDER.forEach(k=>names[k]=$("#n-"+k).value.trim()||KIDS[k].name);const classes={};ORDER.forEach(k=>classes[k]=$("#c-"+k).value.trim()||KIDS[k].cls);const ok=await saveSettings({names,classes});$("#setmsg").textContent=ok?"Saved.":"Couldn't save — only the artifact owner and editors can change settings.";};
+}
+function stylesPanel(k){const m={};for(const a of of(k)){const st=a.style||a.mode;if(!STYLE[st])continue;m[st]=m[st]||{n:0,s:0,t:0,d:0,dq:0};const o=m[st];o.n++;o.s+=a.score||0;o.t+=a.total||0;if(a.dur&&a.total&&st!=="sprint"&&st!=="match"){o.d+=a.dur;o.dq+=a.total}}
+ const rows=Object.entries(m).sort((a,b)=>b[1].n-a[1].n);if(!rows.length)return`<div><div class="lbl">How ${esc(nameOf(k))} learns</div><div class="tiny muted">Styles appear after a few games.</div></div>`;
+ const acc=o=>o.t?Math.round(o.s/o.t*100):0;const ranked=rows.filter(([,o])=>o.n>=2&&o[ "t"]).sort((a,b)=>acc(b[1])-acc(a[1]));
+ const best=ranked[0],fav=rows[0];
+ return`<div><div class="lbl">How ${esc(nameOf(k))} learns</div>
+  <div class="tiny" style="margin:4px 0 6px">Favourite: <b>${STYLE[fav[0]]}</b>${best?` · Strongest: <b>${STYLE[best[0]]}</b> (${acc(best[1])}%)`:""}</div>
+  <div class="feedwrap"><table class="styles"><thead><tr><th>Style</th><th>Plays</th><th>Score</th><th>Sec/question</th></tr></thead><tbody>
+  ${rows.map(([st,o])=>`<tr><td>${STYLE[st]}</td><td>${o.n}</td><td>${st==="match"?"—":acc(o)+"%"}</td><td>${o.dq?Math.round(o.d/o.dq/1000):"—"}</td></tr>`).join("")}</tbody></table></div></div>`}
+function kidPanel(k,today,week){
+ const K=KIDS[k],subs=SUBJECTS[k].map(s=>s[0]);
+ const acc=accBySubject(k,30);
+ const totalA=Object.values(acc).reduce((s,v)=>[s[0]+v[0],s[1]+v[1]],[0,0]);
+ const accPct=totalA[1]?Math.round(totalA[0]/totalA[1]*100):null;
+ const wk=week.map(d=>stars(k,d));const max=Math.max(5,...wk);
+ const missed=of(k).slice().sort((a,b)=>b.ts-a.ts).flatMap(a=>a.missed||[]).slice(0,4);
+ const pill=p=>p===null?`<span class="pill p-none">no data</span>`:p>=80?`<span class="pill p-good">${p}%</span>`:p>=60?`<span class="pill p-warn">${p}%</span>`:`<span class="pill p-bad">${p}%</span>`;
+ const barCol=p=>p>=80?"var(--good)":p>=60?"var(--warn)":"var(--bad)";
+ let ple="";
+ if(K.ple){const m=PLE_MAP[k];const four=["Mathematics","English","Science","Social Studies"];
+  const grade=pl=>{const srcs=Object.entries(m).filter(([s,t])=>t===pl||(Array.isArray(t)&&t.includes(pl))).map(([s])=>s);const v=srcs.reduce((a,s)=>acc[s]?[a[0]+acc[s][0],a[1]+acc[s][1]]:a,[0,0]);if(!v[1])return["—","Not yet practised"];const p=v[0]/v[1]*100;return p>=80?["D1","On pace"]:p>=70?["D2","Close"]:p>=60?["C3","Building"]:["C4+","Needs focus"]};
+  const g=four.map(s=>[s,...grade(s)]);
+  ple=`<div class="ple"><div class="lbl">Road to aggregate 4 · PLE ${K.pleYear}</div>
+   <div class="g">${g.map(([s,gr,t])=>`<div><b>${gr}</b>${s==="Social Studies"?"SST":s.slice(0,4)}<div class="muted" style="font-size:11px">${t}</div></div>`).join("")}</div>
+   <div class="tiny muted" style="margin-top:6px">Pace guide from 30-day practice accuracy (80%+ = D1 pace). ${k==="malaika"?"In P3, Topic (Literacy) feeds Science & SST.":""} Not an exam grade.</div></div>`}
+ const W=280,H=70,bw=W/7-8;
+ return`<div class="pcard"><div class="who"><h2><span class="dot" style="background:${K.color}"></span>${esc(nameOf(k))}</h2><span class="muted tiny">${esc(clsOf(k))}</span></div>
+  <div class="kpis"><div class="kpi"><div class="v">${stars(k,today)}</div><div class="l">stars today</div></div>
+   <div class="kpi"><div class="v">${streak(k)}</div><div class="l">day streak · Level ${levelOf(k).lvl}</div></div>
+   <div class="kpi"><div class="v">${accPct===null?"—":accPct+"%"}</div><div class="l">30-day accuracy</div></div></div>
+  <div><div class="lbl">Today's quests</div><div class="todo" style="margin-top:6px">${subs.map(s=>{const d=questDone(k,s,today);return d?`<span class="pill p-good">✓ ${s} ${d.score}/${d.total}</span>`:`<span class="pill p-none">${s}</span>`}).join("")}</div></div>
+  <div><div class="lbl">Stars this week</div><svg viewBox="0 0 ${W} ${H+16}" width="100%" role="img" aria-label="Stars per day this week">
+   <line x1="0" y1="${H}" x2="${W}" y2="${H}" stroke="var(--line)"/>
+   ${wk.map((v,i)=>{const h=v/max*(H-12);const x=i*(W/7)+4;return`<rect x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="3" fill="${K.color}" opacity="${i===6?1:.65}"/>${v?`<text x="${x+bw/2}" y="${H-h-3}" text-anchor="middle" font-size="10" fill="var(--fg)">${v}</text>`:""}<text x="${x+bw/2}" y="${H+13}" text-anchor="middle" font-size="10" fill="var(--muted)">${new Date(week[i]+"T00:00").toLocaleDateString("en-GB",{weekday:"narrow"})}</text>`}).join("")}
+  </svg></div>
+  <div><div class="lbl" style="margin-bottom:6px">Accuracy by subject (30 days)</div>
+   ${subs.map(s=>{const v=acc[s];const p=v&&v[1]?Math.round(v[0]/v[1]*100):null;return`<div class="subj"><span>${s}</span><div class="bar"><i style="width:${p||0}%;background:${p===null?"transparent":barCol(p)}"></i></div>${pill(p)}</div>`}).join("")}</div>
+  ${ple}
+  ${stylesPanel(k)}
+  <div><div class="lbl">Talk about at dinner</div>${missed.length?`<ul class="miss">${missed.map(m=>`<li>${esc(m)}</li>`).join("")}</ul>`:`<div class="tiny muted">Nothing missed recently.</div>`}</div>
+ </div>`;
+}
+
+/* boot */
+render();
+fbBoot();
+if(AUTH){AUTH.onAuthStateChanged(u=>{authReady=true;familyIn=!!u;if(u)initStore();else{unsubs.forEach(x=>{try{x()}catch(e){}});unsubs=[]}render()})}
+else{authReady=true;render()}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+window.addEventListener("resize",()=>{if(route()==="levi")drawStars()});
+</script>
+
+</body></html>
