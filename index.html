@@ -44,6 +44,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .k-levi{background:#0b1030;color:#e9ecff}
 .k-malaika{background:#fff;color:#3a2350;box-shadow:inset 0 0 0 4px #ffd1e3}
 .k-israel{background:#ffd23f;color:#4a2a00}
+.k-praise{background:linear-gradient(135deg,#a3104a,#e2427f);color:#fff;box-shadow:inset 0 0 0 3px #ffc2dc}
 .parentlink{margin-top:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px}
 
 /* ---------- Kid worlds (each a deliberate single look) ---------- */
@@ -52,6 +53,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .world[data-kid="levi"]{--w-bg:#080c26;--w-fg:#e9ecff;--w-card:#141b45;--w-acc:#ffb547;--w-acc-ink:#1b1200;--w-soft:#222b63;--w-line:#2d3878;color-scheme:dark}
 .world[data-kid="malaika"]{--w-bg:#fff6fa;--w-fg:#3a2350;--w-card:#ffffff;--w-acc:#e8357a;--w-acc-ink:#fff;--w-soft:#ffe4ef;--w-line:#f3c6da;color-scheme:light}
 .world[data-kid="israel"]{--w-bg:#fff1c2;--w-fg:#4a2a00;--w-card:#ffffff;--w-acc:#ff6a00;--w-acc-ink:#fff;--w-soft:#ffe28a;--w-line:#f4cf6a;color-scheme:light}
+.world[data-kid="praise"]{--w-bg:#fff0f6;--w-fg:#4a1030;--w-card:#ffffff;--w-acc:#c81d63;--w-acc-ink:#fff;--w-soft:#ffdbea;--w-line:#f5b8d2;color-scheme:light}
 .world{background:var(--w-bg);color:var(--w-fg);position:relative}
 .world #stars{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 .world .wrap{position:relative}
@@ -83,6 +85,15 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline
 .world[data-kid="malaika"] .hello h1{background:linear-gradient(90deg,#e53935,#fb8c00,#fdd835,#43a047,#1e88e5,#3949ab,#8e24aa);-webkit-background-clip:text;background-clip:text;color:transparent}
 .world[data-kid="malaika"] .hello h1::after{content:" 👑";-webkit-text-fill-color:initial;color:initial}
 .world[data-kid="malaika"] .sect::before{content:"✦ ";color:#e8357a}
+.world[data-kid="praise"] .hello h1{color:#c81d63;font-size:clamp(32px,5.2vw,50px)}
+.world[data-kid="praise"] .hello h1::after{content:" 💎"}
+.world[data-kid="praise"] .sect::before{content:"♦ ";color:#c81d63}
+.world[data-kid="praise"] .quest,.world[data-kid="praise"] .feature{box-shadow:0 3px 0 #f5b8d2}
+.answers{margin-top:14px;text-align:left;border-top:2px dashed var(--w-line);padding-top:10px}
+.answers summary{cursor:pointer;font-family:var(--display);font-size:20px;font-weight:700}
+.answers ol{padding-left:22px;margin:8px 0 0}
+.answers li{margin:0 0 10px;font-size:15px}
+.answers .ok{color:#1f8a4c;font-weight:700}.answers .no{color:#c2413b;font-weight:700}
 .world[data-kid="daudi"] .sect{text-transform:uppercase;letter-spacing:.06em;font-size:20px}
 .world[data-kid="daudi"] .quest.done{box-shadow:inset 0 -4px 0 #f26b1d}
 .torah{border-radius:22px;padding:18px 20px;margin-top:14px;border:2px solid var(--w-line);background:var(--w-card)}
@@ -198,9 +209,10 @@ const KIDS = {
   daudi:   {name:"Daudi",   age:13, cls:"Senior 1 · King's College Budo", theme:"Court & Garage — hoops, horsepower and science", color:"#f26b1d", ple:false},
   levi:    {name:"Levi",    age:11, cls:"Primary 5 · Clarke Junior",      theme:"Space & speed commander", color:"#3949ab", ple:true, pleYear:2028},
   malaika: {name:"Malaika", age:8,  cls:"Primary 3 · Clarke Junior",      theme:"Rainbow Princess",  color:"#e8357a", ple:true, pleYear:2030},
+  praise:  {name:"Princess Praise", age:12, cls:"Primary 7 · PLE 2027 candidate", theme:"Pink Diamond · on the road to aggregate 4", color:"#c81d63", ple:true, pleYear:2027},
   israel:  {name:"Israel",  age:3,  cls:"Montessori · ages 3–6",          theme:"Sunny garden",    color:"#ff8a00", ple:false, birthday:"2026-11-12", turning:4}
 };
-const ORDER = ["daudi","levi","malaika","israel"];
+const ORDER = ["daudi","praise","levi","malaika","israel"];
 
 /* =========================================================
    QUESTION BANKS  —  [question, correct, wrong, wrong, wrong, why, soWhat]
@@ -576,7 +588,7 @@ delete BANK.malaika.Literacy;
 /* =========================================================
    ARCADE ENGINE — every format draws on the same banks
    ========================================================= */
-const STYLE={quest:"Daily quiz",adventure:"Adventure",sprint:"Speed sprint",exam:"Practice exam",tf:"True/False blitz",sowhat:"So What? challenge",scramble:"Word scramble",match:"Memory match",bee:"Spelling Bee",spot:"Spot the spelling"};
+const STYLE={quest:"Daily quiz",adventure:"Adventure",sprint:"Speed sprint",exam:"Practice exam",tf:"True/False blitz",sowhat:"So What? challenge",scramble:"Word scramble",match:"Memory match",bee:"Spelling Bee",spot:"Spot the spelling",paper:"PLE paper"};
 const cleanOpt=x=>x.includes("|")?x.split("|")[1]:x;
 function poolOf(k){const out=[];const tu=typeof tierUnlocked==="function"?tierUnlocked(k):1;for(const [s,arr] of Object.entries(BANK[k]||{}))for(const q of arr)if(!q.tier||q.tier<=tu)out.push({...q,subject:q.subject||s});return out}
 function mathItems(k,n,r){if(!GEN[k])return[];return Array.from({length:n},()=>({...pick(r,GEN[k])(r),subject:"Mathematics"}))}
@@ -605,7 +617,7 @@ const ARCADE_INFO={
  sowhat:["🌍","So What? challenge","You know the answer — now pick why it matters in the real world."],
  scramble:["🔤","Word scramble","Unscramble the key word. The clue is the question."],
  match:["🃏","Memory match","Flip cards and match each question to its answer."],
- bee:["🐝","Spelling Bee","Hear the word, ask for its meaning, then spell it. Three hives: Busy, Honey and Queen Bee."],
+ bee:["🐝","Spelling Bee","Hear the word, ask for its meaning, then spell it. Climb the hives all the way to Queen Bee."],
  spot:["🔍","Spot the spelling","Four spellings, one is right. Can a wordsmith spot it every time?"]
 };
 
@@ -697,6 +709,262 @@ const ADVENTURE = {
  israel:{title:"Flower Garden",sub:"Make 6 flowers bloom! Tap the right picture.",n:6,icon:"🌼"}
 };
 const PLE_MAP = {levi:{Mathematics:"Mathematics",English:"English",Science:"Science",SST:"Social Studies"},malaika:{Mathematics:"Mathematics",English:"English",Topic:["Science","Social Studies"]}};
+
+/* =========================================================
+   PRINCESS PRAISE · P7 (PLE 2027 candidate) — the whole P7 year,
+   PLE-style papers with full answers, and her pink world.
+   Each item: [theme, question, correct, wrong, wrong, wrong, why, soWhat]
+   ========================================================= */
+const PQ=(theme,...a)=>({...B(...a),theme});
+const pgcd=(a,b)=>b?pgcd(b,a%b):a;
+function pfrac(n,d){const g=pgcd(n,d);n/=g;d/=g;if(d===1)return String(n);if(n>d){const w=Math.floor(n/d);return`${w} ${n-w*d}/${d}`}return`${n}/${d}`}
+const pad2=n=>String(n).padStart(2,"0");
+
+BANK.praise={
+ Science:[
+  /* Term 1 · Muscular and skeletal system */
+  PQ("Muscles & skeleton","Which joint allows movement in all directions?","Ball and socket joint","Hinge joint","Pivot joint","Gliding joint","Ball and socket joints are found at the shoulder and hip; the knee and elbow are hinge joints.","Surgeons replace worn-out hips with metal ball-and-socket joints so people can walk again."),
+  PQ("Muscles & skeleton","The tough tissue that joins a muscle to a bone is a…","Tendon","Ligament","Cartilage","Bone marrow","Tendons join muscle to bone; ligaments join bone to bone.","Athletes rest an injured tendon for weeks — it heals slowly because it has little blood supply."),
+  PQ("Muscles & skeleton","Which mineral makes bones hard and strong?","Calcium","Iron","Iodine","Sodium","Calcium (from milk, fish with bones, greens) hardens bones and teeth.","Girls who build strong bones now are protected from weak bones later in life."),
+  PQ("Muscles & skeleton","Red blood cells are made in the…","Bone marrow","Heart","Kidneys","Lungs","The soft marrow inside long bones produces blood cells.","Bone-marrow transplants save people with blood cancers."),
+  PQ("Muscles & skeleton","Lack of vitamin D in children causes…","Rickets","Scurvy","Kwashiorkor","Goitre","Vitamin D (made in skin by sunlight) helps the body use calcium; without it bones bend.","Morning sunshine is free medicine for bones."),
+  PQ("Muscles & skeleton","When the biceps muscle contracts, the arm…","Bends at the elbow","Straightens","Twists at the wrist","Stops moving","Biceps and triceps work as an antagonistic pair: biceps bends, triceps straightens.","Robot arms copy this pair of 'pull' muscles to lift objects."),
+  PQ("Muscles & skeleton","Which bone protects the brain?","Skull","Rib cage","Pelvis","Femur","The skull (cranium) encloses the brain; the rib cage protects heart and lungs.","That's why boda boda riders must wear helmets."),
+  PQ("Muscles & skeleton","The longest bone in the human body is the…","Femur (thigh bone)","Humerus","Ulna","Tibia","The femur runs from hip to knee.","Doctors measure the femur on scans to estimate a baby's growth before birth."),
+  /* Term 1 · Electricity and magnetism */
+  PQ("Electricity & magnetism","Which of these is a good conductor of electricity?","Copper wire","Rubber","Dry wood","Plastic","Metals like copper let current flow; rubber, plastic and dry wood are insulators.","Electric cables are copper inside and plastic outside — conductor and insulator together keep us safe."),
+  PQ("Electricity & magnetism","A fuse protects a circuit by…","Melting when too much current flows","Storing electricity","Making bulbs brighter","Changing AC to DC","The thin fuse wire melts and breaks the circuit before wires overheat.","Fuses and circuit breakers prevent house fires."),
+  PQ("Electricity & magnetism","Like poles of two magnets…","Repel each other","Attract each other","Have no effect","Stick together forever","Like poles repel; unlike poles attract.","Magnetic-levitation trains float above the track using repelling magnets."),
+  PQ("Electricity & magnetism","Which object is attracted by a magnet?","Iron nail","Copper coin","Plastic ruler","Glass marble","Magnetic materials include iron, steel, nickel and cobalt.","Scrap yards use giant electromagnets to separate iron from other metals."),
+  PQ("Electricity & magnetism","Two bulbs are joined in parallel. If one bulb blows, the other…","Stays on","Goes off","Becomes a fuse","Explodes","In parallel each bulb has its own path, so one can fail without breaking the other's circuit.","Houses are wired in parallel so one broken bulb doesn't black out every room."),
+  PQ("Electricity & magnetism","Bujagali and Karuma power stations produce electricity using…","Running water","Wind","Coal","Diesel","These are hydroelectric power stations on the River Nile.","Hydro power is renewable — the Nile keeps flowing."),
+  PQ("Electricity & magnetism","A device that opens and closes an electric circuit is a…","Switch","Bulb","Dry cell","Fuse","A switch breaks or completes the circuit.","Every light, phone and computer you use starts with a switch."),
+  PQ("Electricity & magnetism","Why is it dangerous to touch switches with wet hands?","Water conducts electricity","Water stops electricity","Switches dissolve","Hands become magnetic","Impure water conducts current through your body.","Electricians follow strict safety rules because electric shocks can kill."),
+  /* Term 1 · Excretory system */
+  PQ("Excretory system","Which organ removes urea from the blood?","Kidney","Lungs","Heart","Stomach","Kidneys filter urea and excess water from blood to make urine.","Dialysis machines do the kidneys' work for people whose kidneys fail."),
+  PQ("Excretory system","The skin excretes waste in the form of…","Sweat","Urine","Faeces","Bile","Sweat carries water, salts and a little urea out through sweat pores.","Sweating also cools the body — that's why athletes drink extra water."),
+  PQ("Excretory system","The lungs excrete…","Carbon dioxide and water vapour","Urea","Sweat","Undigested food","Breathing out removes carbon dioxide and water vapour made in respiration.","Doctors can test breath to detect some illnesses."),
+  PQ("Excretory system","The tube that carries urine from the kidney to the bladder is the…","Ureter","Urethra","Oesophagus","Trachea","Ureter: kidney → bladder. Urethra: bladder → outside.","Knowing body parts by name helps you understand what a doctor tells you."),
+  PQ("Excretory system","Removing undigested food from the body is called…","Egestion","Excretion","Ingestion","Digestion","Egestion removes undigested food; excretion removes waste made by cells.","Exams love this pair — and so do doctors."),
+  /* Term 2 · Simple machines and friction */
+  PQ("Simple machines & friction","A pair of scissors is a lever of which class?","First class","Second class","Third class","Not a lever","The fulcrum (the screw) is between the effort and the load.","Engineers pick the lever class that gives the most power for the job."),
+  PQ("Simple machines & friction","A wheelbarrow is a second-class lever because the … is in the middle.","Load","Effort","Fulcrum","Handle","Second class: load between the fulcrum (wheel) and the effort (hands).","One person can carry bricks that would need three people to lift by hand."),
+  PQ("Simple machines & friction","Mechanical advantage (M.A.) is calculated as…","Load ÷ Effort","Effort ÷ Load","Load × Effort","Load − Effort","M.A. tells how many times a machine multiplies your force.","Car jacks have a huge M.A. — one person can lift a car."),
+  PQ("Simple machines & friction","A lever lifts a load of 600 N using an effort of 200 N. What is its M.A.?","3","400","800","⅓","M.A. = 600 ÷ 200 = 3.","A machine with M.A. 3 lets you lift three times what your muscles alone could."),
+  PQ("Simple machines & friction","Which of these REDUCES friction in a bicycle?","Oiling the chain","Adding sand","Rusting","Using rough surfaces","Oil makes a smooth layer between moving parts.","Less friction means less wear and less effort — bicycles and engines last longer."),
+  PQ("Simple machines & friction","Why do tyres have treads (patterns)?","To increase friction and grip","To look pretty","To make them lighter","To reduce air","Treads grip the road and push water away.","Smooth (bald) tyres cause accidents on wet roads."),
+  PQ("Simple machines & friction","A ramp used to roll drums onto a lorry is a…","Inclined plane","Pulley","Wheel and axle","Wedge","An inclined plane lets you raise a load with less effort over a longer distance.","Ramps also help people in wheelchairs enter buildings."),
+  PQ("Simple machines & friction","A flag is raised to the top of the pole using a…","Pulley","Lever","Wedge","Screw","A pulley changes the direction of the force: you pull down, the flag goes up.","Cranes on building sites use systems of pulleys to lift tonnes."),
+  /* Term 2 · Population and health */
+  PQ("Population & health","The counting of all people in a country is called a…","Census","Survey","Budget","Election","Uganda carries out a national census about every ten years.","Government uses census numbers to plan schools, hospitals and roads."),
+  PQ("Population & health","Population density is found by…","Total population ÷ land area","Land area ÷ total population","Total population × land area","Births − deaths","Density tells how many people live on each square kilometre.","Crowded areas need more water, clinics and transport."),
+  PQ("Population & health","HIV mainly attacks the body's…","White blood cells","Red blood cells","Bones","Skin cells","HIV destroys white blood cells that fight infection, leading to AIDS.","Knowing how HIV works is how Uganda reduced infections — knowledge saves lives."),
+  PQ("Population & health","Which is a problem caused by a rapidly growing population?","Shortage of land and jobs","More food for everyone","Fewer schools needed","Less traffic","More people share the same land, schools and services.","Planners and economists study population to prepare for the future."),
+  /* Term 2 · Light */
+  PQ("Light energy","Light travels in…","Straight lines","Curves","Circles","Zigzags","That is why shadows form and why you cannot see round corners.","Lasers used in surgery and fibre internet rely on straight-travelling light."),
+  PQ("Light energy","The bending of light as it passes from air into water is called…","Refraction","Reflection","Dispersion","Absorption","Light changes speed and bends at the boundary.","Refraction is why a stick looks bent in water — and how spectacles focus light."),
+  PQ("Light energy","Which part of the eye controls how much light enters?","Iris","Retina","Lens","Optic nerve","The iris (coloured part) widens or narrows the pupil.","Camera makers copied the iris to make the aperture."),
+  PQ("Light energy","Short-sightedness is corrected using a…","Concave (diverging) lens","Convex lens","Plane mirror","Prism","A concave lens spreads light so it focuses on the retina.","Spectacles help millions of pupils read the board clearly."),
+  PQ("Light energy","Splitting white light into seven colours is called…","Dispersion","Reflection","Refraction only","Conduction","A prism separates white light into the colours of the rainbow.","Scientists use dispersion to find what stars are made of."),
+  /* Term 3 · Interdependence and the environment */
+  PQ("Interdependence","In the food chain grass → grasshopper → frog → snake, the frog is a…","Secondary consumer","Producer","Primary consumer","Decomposer","Grass is the producer, the grasshopper the primary consumer, the frog eats the grasshopper.","Remove one link and the whole chain suffers — that's why we protect frogs and snakes."),
+  PQ("Interdependence","Organisms that break down dead plants and animals are…","Decomposers","Producers","Predators","Parasites","Bacteria and fungi decompose dead matter and return nutrients to the soil.","Compost made by decomposers feeds gardens without chemicals."),
+  PQ("Interdependence","A tick feeding on a cow is an example of a…","Parasite","Predator","Producer","Host","A parasite lives on or in a host and harms it.","Farmers spray cattle against ticks to stop East Coast fever."),
+  PQ("Interdependence","Which gas do green plants take in for photosynthesis?","Carbon dioxide","Oxygen","Nitrogen","Hydrogen","Plants use carbon dioxide, water and sunlight to make food and release oxygen.","Forests soak up carbon dioxide and slow climate change."),
+  PQ("Interdependence","Bees and flowers help each other. This relationship is called…","Mutualism","Parasitism","Predation","Competition","Bees get nectar; flowers get pollinated — both benefit.","Coffee and fruit farmers earn more where there are healthy bees."),
+  /* Term 3 · Resources in the environment */
+  PQ("Resources in the environment","Which of these is a renewable resource?","Solar energy","Petroleum","Copper","Coal","Renewable resources can be replaced naturally.","Uganda's sunshine can power homes long after oil runs out."),
+  PQ("Resources in the environment","Soil erosion on steep slopes in Kigezi is best controlled by…","Terracing","Bush burning","Overgrazing","Deforestation","Terraces are step-like levels that slow running water.","Terracing lets farmers grow food on hills without losing the soil."),
+  PQ("Resources in the environment","Planting trees where a forest had been cut down is called…","Re-afforestation","Deforestation","Afforestation","Agroforestry","Re-afforestation replaces lost forest; afforestation plants trees where there was no forest before.","Forests protect water sources and give oxygen, timber and medicine."),
+  /* PLE revision · P4–P6 */
+  PQ("P4–P6 revision","Which blood vessels carry blood away from the heart?","Arteries","Veins","Capillaries","Valves","Arteries carry blood away; veins bring it back.","Nurses take your pulse from an artery to check your heart."),
+  PQ("P4–P6 revision","Which vitamin prevents scurvy (bleeding gums)?","Vitamin C","Vitamin A","Vitamin D","Vitamin K","Vitamin C is in oranges, mangoes and fresh vegetables.","Sailors once died of scurvy until they carried lemons on long voyages."),
+  PQ("P4–P6 revision","BCG vaccine protects against…","Tuberculosis","Measles","Polio","Tetanus","BCG is given at birth against TB.","Immunisation is one of the cheapest ways to save lives."),
+  PQ("P4–P6 revision","Sound travels fastest through…","Solids","Liquids","Gases","A vacuum","Particles in solids are closest together, so vibrations pass quickly.","Sound cannot travel in space at all — there are no particles."),
+  PQ("P4–P6 revision","First aid for a nose bleed: the person should…","Sit up, lean forward and pinch the soft part of the nose","Lie flat on their back","Tilt the head far back","Blow the nose hard","Leaning forward stops blood running down the throat.","Knowing first aid lets you help before a nurse arrives."),
+  PQ("P4–P6 revision","Which part of a flower becomes the fruit after fertilisation?","Ovary","Anther","Petal","Stigma","The ovary becomes the fruit; the ovules become seeds.","Every mango and avocado you eat was once a flower's ovary.")
+ ],
+ SST:[
+  /* Location of Africa */
+  PQ("Location of Africa","Africa is the world's ___ largest continent.","Second","First","Third","Fifth","Asia is the largest; Africa is second.","Africa's size and young population make it the continent of the future."),
+  PQ("Location of Africa","Which sea separates Africa from Europe?","Mediterranean Sea","Red Sea","Arabian Sea","Caspian Sea","The Mediterranean lies north of Africa; the Red Sea separates Africa from Asia.","Trade across the Mediterranean has connected Africa and Europe for thousands of years."),
+  PQ("Location of Africa","The Suez Canal joins the Mediterranean Sea to the…","Red Sea","Indian Ocean","Atlantic Ocean","Gulf of Guinea","The canal in Egypt cuts the journey between Europe and Asia.","About a tenth of all world trade passes through the Suez Canal."),
+  PQ("Location of Africa","The Prime Meridian (0° longitude) passes through which country?","Ghana","Kenya","Uganda","Egypt","It passes near Tema in Ghana.","World time zones are counted from this line."),
+  PQ("Location of Africa","Every 15° of longitude makes a time difference of…","1 hour","4 minutes","15 minutes","24 hours","360° ÷ 24 hours = 15° per hour.","Pilots and businesses calculate time differences to plan flights and calls."),
+  PQ("Location of Africa","It is noon at the Prime Meridian. What is the time at 45°E?","3:00 p.m.","9:00 a.m.","3:00 a.m.","12:45 p.m.","45 ÷ 15 = 3 hours; places east are ahead.","Kampala (about 30°E–45°E time zone) is 3 hours ahead of London."),
+  PQ("Location of Africa","On a map, the part that explains what the symbols mean is the…","Key","Scale","Title","Compass","The key (legend) explains the symbols.","Reading map keys is how surveyors, soldiers and tourists find their way."),
+  /* Physical features */
+  PQ("Physical features of Africa","The longest river in Africa is the…","River Nile","River Congo","River Niger","River Zambezi","The Nile flows over 6,600 km to the Mediterranean.","The Nile gives water, fish and electricity to millions of people."),
+  PQ("Physical features of Africa","The highest mountain in Africa is…","Mount Kilimanjaro","Mount Kenya","Mount Rwenzori","Mount Elgon","Kilimanjaro in Tanzania is about 5,895 m high.","Tourists who climb it bring income to Tanzania."),
+  PQ("Physical features of Africa","Lake Tanganyika and Lake Albert were formed by…","Faulting","Volcanic activity","Down-warping","Glaciation","They are rift valley lakes — long, narrow and deep.","The rift valley holds oil and geothermal energy."),
+  PQ("Physical features of Africa","Lake Victoria was formed by…","Down-warping","Faulting","Volcanic eruption","Wind erosion","The land sagged and water filled the basin — it is wide and shallow.","Lake Victoria supports fishing and transport for three countries."),
+  PQ("Physical features of Africa","The largest desert in Africa is the…","Sahara","Kalahari","Namib","Danakil","The Sahara covers much of North Africa.","Huge solar farms are being planned in the Sahara."),
+  PQ("Physical features of Africa","Kariba Dam was built across River…","Zambezi","Nile","Congo","Orange","Kariba lies between Zambia and Zimbabwe.","One dam can power two countries."),
+  /* Climate and vegetation */
+  PQ("Climate & vegetation","Which climate is hot and wet all year, as in the Congo Basin?","Equatorial climate","Mediterranean climate","Desert climate","Montane climate","Equatorial regions get convectional rain almost every afternoon.","This climate supports tropical rainforests full of timber and medicine plants."),
+  PQ("Climate & vegetation","North Africa's Mediterranean climate gets most rain in…","Winter","Summer","All year round","Never","Hot dry summers and warm wet winters.","Olives, grapes and citrus grow well in this climate."),
+  PQ("Climate & vegetation","The most widespread vegetation in Africa is…","Savannah grassland","Tropical rainforest","Desert scrub","Mediterranean forest","Savannah — tall grass with scattered trees — covers the largest area.","Most of Africa's famous wildlife and cattle keeping is on savannah."),
+  PQ("Climate & vegetation","The cold Benguela current makes which coast dry?","Namib (Namibia)","Kenya coast","Ghana coast","Somalia coast","Cold currents cool the air so it holds little moisture — no rain.","Ocean currents explain why some coasts are deserts."),
+  PQ("Climate & vegetation","Rain formed when moist wind rises over a mountain is called…","Relief rainfall","Convectional rainfall","Cyclonic rainfall","Frontal rainfall","Rising air cools and condenses on the windward side.","Mt Elgon's slopes get heavy relief rain — perfect for Bugisu coffee."),
+  /* People of Africa */
+  PQ("People of Africa","The Bantu are believed to have come from the…","Cameroon highlands","Ethiopian highlands","Bahr el Ghazal","Nile delta","Most historians trace Bantu origins to the Cameroon–Nigeria highlands.","Bantu languages are now spoken across half of Africa."),
+  PQ("People of Africa","The San (Bushmen) mainly live in the…","Kalahari Desert","Congo forest","Nile valley","Atlas Mountains","They are skilled hunters and gatherers.","Their knowledge of desert plants is studied by scientists today."),
+  PQ("People of Africa","The Maasai of Kenya and Tanzania are mainly…","Pastoralists","Fishermen","Miners","Traders","They keep cattle, goats and sheep and move with them.","Pastoralists know how to survive droughts — knowledge useful as climates change."),
+  /* Foreign influence */
+  PQ("Foreign influence in Africa","The first European to reach the source of the Nile at Jinja (1862) was…","John Speke","David Livingstone","Henry Stanley","Samuel Baker","Speke named the lake Victoria and saw the Nile flowing out at Jinja.","Exploration opened Africa to trade — and later to colonialism."),
+  PQ("Foreign influence in Africa","The Berlin Conference of 1884–1885 was held to…","Share Africa among European powers","End the slave trade","Build the Uganda Railway","Form the OAU","European powers drew Africa's borders without Africans present.","Many of today's border conflicts started at Berlin."),
+  PQ("Foreign influence in Africa","The first CMS missionaries arrived in Buganda in…","1877","1862","1900","1962","Shergold Smith and C.T. Wilson arrived in 1877; Mackay followed.","Missionaries started many of Uganda's oldest schools and hospitals."),
+  PQ("Foreign influence in Africa","Ruling through local chiefs and kings is called…","Indirect rule","Assimilation","Apartheid","Direct rule","The British used indirect rule, e.g. in Buganda and Northern Nigeria.","It was cheap for Britain and kept some local leaders in power."),
+  PQ("Foreign influence in Africa","The French policy of turning Africans into 'Frenchmen' was called…","Assimilation","Indirect rule","Association","Apartheid","Assimilation spread French language, law and culture.","That's why French is spoken in Senegal, Côte d'Ivoire and DR Congo today."),
+  PQ("Foreign influence in Africa","Which African country defeated Italy at the Battle of Adwa (1896)?","Ethiopia","Libya","Somalia","Eritrea","Emperor Menelik II's army won, keeping Ethiopia independent.","Adwa became a symbol of African pride; the African Union's headquarters is in Addis Ababa."),
+  PQ("Foreign influence in Africa","The Uganda Railway from Mombasa reached Kisumu in…","1901","1896","1931","1962","Building started at Mombasa in 1896 and reached Kisumu in 1901.","The railway made it cheaper to export cotton and coffee."),
+  /* Nationalism and independence */
+  PQ("Nationalism & independence","The first black African colony south of the Sahara to gain independence (1957) was…","Ghana","Kenya","Nigeria","Uganda","Ghana (Gold Coast) won independence on 6 March 1957.","Ghana's freedom inspired independence movements across Africa."),
+  PQ("Nationalism & independence","Ghana was led to independence by…","Kwame Nkrumah","Julius Nyerere","Jomo Kenyatta","Nelson Mandela","Nkrumah became Ghana's first prime minister and later president.","He also championed African unity — an idea behind the AU."),
+  PQ("Nationalism & independence","The Mau Mau uprising was a struggle for land and freedom in…","Kenya","Tanzania","Ghana","Zambia","It was fought in the 1950s against British rule.","It sped up Kenya's independence in 1963."),
+  PQ("Nationalism & independence","Apartheid — separating people by race — was practised in…","South Africa","Ghana","Tanzania","Egypt","Apartheid laws ran from 1948 until the early 1990s.","Its end shows how peaceful pressure and leaders like Mandela can change a nation."),
+  PQ("Nationalism & independence","Nelson Mandela became South Africa's first black president in…","1994","1990","1962","2002","He was released from prison in 1990 and elected in 1994.","He chose forgiveness over revenge — a lesson for leaders everywhere."),
+  PQ("Nationalism & independence","Who was Uganda's Prime Minister at independence in 1962?","Milton Obote","Benedicto Kiwanuka","Idi Amin","Sir Edward Mutesa II","Obote was PM; Sir Edward Mutesa II became the ceremonial president in 1963.","Leaders' choices at independence shaped the country we live in."),
+  PQ("Nationalism & independence","Tanzania was formed in 1964 by the union of Tanganyika and…","Zanzibar","Kenya","Rwanda","Malawi","Tan(ganyika) + Zan(zibar) = Tanzania.","It's one of Africa's few successful unions of two countries."),
+  /* Organisations and economy */
+  PQ("Africa & the world","The OAU was formed in 1963 in…","Addis Ababa","Nairobi","Accra","Kampala","32 independent states signed its charter in Ethiopia's capital.","Unity helped African countries fight colonialism together."),
+  PQ("Africa & the world","The OAU was replaced by the African Union in…","2002","1963","1994","1999","The AU was launched in Durban, South Africa, in 2002.","The AU now works on peace, trade and a free trade area across Africa."),
+  PQ("Africa & the world","The headquarters of the East African Community is in…","Arusha","Nairobi","Kampala","Kigali","The EAC secretariat is in Arusha, Tanzania.","EAC lets goods and people cross borders more easily."),
+  PQ("Africa & the world","ECOWAS brings together countries in…","West Africa","East Africa","Southern Africa","North Africa","ECOWAS = Economic Community of West African States.","Regional blocs make African markets bigger and stronger."),
+  PQ("Africa & the world","The United Nations was formed in…","1945","1918","1963","1962","It was formed after World War II to keep world peace.","UN agencies run vaccine and refugee programmes in Uganda."),
+  PQ("Africa & the world","Which UN agency mainly cares for children?","UNICEF","UNHCR","WHO","FAO","UNHCR is for refugees, WHO for health, FAO for food and farming.","UNICEF supports immunisation and schooling for millions of children."),
+  PQ("Africa & the world","The world's largest producer of cocoa is…","Côte d'Ivoire","Uganda","Kenya","Egypt","Côte d'Ivoire and Ghana grow most of the world's cocoa.","Countries that process cocoa into chocolate earn far more than those selling raw beans."),
+  PQ("Africa & the world","The Aswan High Dam on the Nile is in…","Egypt","Sudan","Uganda","Ethiopia","It controls Nile floods and produces electricity for Egypt.","Sharing Nile water fairly is one of Africa's biggest diplomatic questions."),
+  PQ("Africa & the world","The arm of government that makes laws is the…","Legislature (Parliament)","Executive","Judiciary","Police","Parliament makes laws, the executive carries them out, the judiciary interprets them.","Knowing how laws are made lets citizens take part in democracy.")
+ ],
+ English:[
+  PQ("Dictionary & vocabulary","Which word comes FIRST in alphabetical order?","prefer","prepare","present","pretty","Compare the fourth letters: f, p, s, t.","Dictionaries, phone contacts and class registers all use alphabetical order."),
+  PQ("Dictionary & vocabulary","Which word comes LAST in alphabetical order?","shop","shine","shirt","shoe","shi-n, shi-r, sho-e, sho-p.","Quick dictionary skills save time in exams."),
+  PQ("Dictionary & vocabulary","What is the plural of 'mother-in-law'?","mothers-in-law","mother-in-laws","mothers-in-laws","mother-ins-law","Add -s to the main word: mother.","Getting small details right makes your writing look polished."),
+  PQ("Dictionary & vocabulary","What is the plural of 'knife'?","knives","knifes","knifs","knive","Many words ending in -f/-fe change to -ves.","Spelling rules help you guess new words correctly."),
+  PQ("Dictionary & vocabulary","What is the opposite of 'polite'?","impolite","unpolite","dispolite","inpolite","The prefix im- is used before p, b and m.","Prefixes help you build hundreds of new words."),
+  PQ("Dictionary & vocabulary","What is the opposite of 'arrive'?","depart","reach","come","enter","Arrive means come; depart means leave.","Airports and bus parks show 'Arrivals' and 'Departures'."),
+  PQ("Dictionary & vocabulary","A group of fish is called a…","shoal","herd","flock","pride","Herd of cattle, flock of sheep, pride of lions.","Collective nouns make writing vivid."),
+  PQ("Dictionary & vocabulary","A person who writes books is an…","author","editor","architect","auditor","Authors write books; editors improve them.","You could be the author of the next great African novel."),
+  PQ("Dictionary & vocabulary","The masculine of 'niece' is…","nephew","uncle","cousin","brother","Niece/nephew, aunt/uncle.","Clear words for family help in formal letters and stories."),
+  PQ("Dictionary & vocabulary","Which word is spelled correctly?","accommodation","accomodation","acommodation","acomodation","Double c and double m: accommodation.","Correct spelling builds trust in job applications."),
+  PQ("Dictionary & vocabulary","The noun formed from 'decide' is…","decision","decidement","decidance","decided","decide → decision.","Changing word forms is a common PLE task."),
+  PQ("Dictionary & vocabulary","The adjective formed from 'danger' is…","dangerous","dangerful","endanger","dangerly","danger + -ous = dangerous.","Strong adjectives make warnings and stories clear."),
+  PQ("Dictionary & vocabulary","'To let the cat out of the bag' means to…","reveal a secret","free an animal","go shopping","lose something","It's an idiom — the meaning isn't literal.","Understanding idioms helps you enjoy books and talk like a native speaker."),
+  PQ("Grammar","Each of the girls ___ a pink ribbon.","has","have","are having","were having","'Each' is singular.","Agreement errors cost marks — and confuse readers."),
+  PQ("Grammar","She has finished her homework, ___?","hasn't she","isn't she","doesn't she","didn't she","A positive statement with 'has' takes the tag 'hasn't she'.","Question tags make conversation polite and natural."),
+  PQ("Grammar","Let's go to the library, ___?","shall we","will we","don't we","won't us","'Let's' always takes 'shall we'.","A small rule — but PLE tests it almost every year."),
+  PQ("Grammar","If I ___ a bird, I would fly over Lake Victoria.","were","was being","am","will be","For imaginary situations use 'were' with all subjects.","Imagining 'what if' is the start of every invention."),
+  PQ("Grammar","By the time we reached the stage, the bus ___ left.","had","has","have","was","Past perfect (had + past participle) shows the earlier of two past actions.","Clear timelines matter in reports and witness statements."),
+  PQ("Grammar","That is the girl ___ bag was stolen.","whose","who","which","whom","'Whose' shows possession.","Relative pronouns join ideas smoothly."),
+  PQ("Grammar","She is good ___ Mathematics.","at","in","on","with","We say 'good at' a subject or skill.","Correct prepositions make you sound confident."),
+  PQ("Grammar","The pupil was accused ___ cheating.","of","for","with","about","accuse someone OF something.","Fixed phrases like this appear often in PLE Section A."),
+  PQ("Grammar","Congratulations ___ passing your exams!","on","for","at","with","congratulate someone ON something.","You'll need this phrase in 2028!"),
+  PQ("Grammar","I prefer tea ___ coffee.","to","than","from","over","prefer A TO B.","Precise English is respected in interviews."),
+  PQ("Grammar","Kampala is ___ than Jinja.","bigger","more big","biggest","most big","Short adjectives add -er; double the final consonant after a short vowel.","Comparing clearly is a key skill in science and business."),
+  PQ("Rewriting sentences","'I am tired,' said Praise. (Begin: Praise said…)","Praise said that she was tired.","Praise said that I am tired.","Praise said that she is tired.","Praise said that she were tired.","In reported speech, I → she and am → was.","Journalists report what people said every day."),
+  PQ("Rewriting sentences","The teacher marked the books. (Begin: The books…)","The books were marked by the teacher.","The books was marked by the teacher.","The books are marked by the teacher.","The books marked the teacher.","Passive: object + was/were + past participle + by + doer.","Science reports often use the passive: 'The water was heated.'"),
+  PQ("Rewriting sentences","The tea is very hot. I cannot drink it. (Use: …too…to…)","The tea is too hot for me to drink.","The tea is too hot for me to drink it.","The tea is very too hot to drink.","The tea is too hot that I cannot drink it.","With 'too…to', drop the object 'it'.","PLE often tests 'too…to' — and the object rule catches many pupils."),
+  PQ("Rewriting sentences","The box is very heavy. I cannot lift it. (Use: …so…that…)","The box is so heavy that I cannot lift it.","The box is so heavy that I cannot lift.","The box is too heavy that I cannot lift it.","The box is so heavy to lift it.","With 'so…that', keep the object 'it'.","Notice: too…to drops 'it'; so…that keeps it."),
+  PQ("Rewriting sentences","Peter does not sing. Mary does not sing. (Use: Neither…nor…)","Neither Peter nor Mary sings.","Neither Peter nor Mary sing.","Neither Peter or Mary sings.","Neither Peter nor Mary doesn't sing.","The verb agrees with the nearer subject (Mary → sings); no extra 'not'.","Joining sentences makes writing shorter and stronger."),
+  PQ("Rewriting sentences","If you do not work hard, you will fail. (Begin: Unless…)","Unless you work hard, you will fail.","Unless you do not work hard, you will fail.","Unless you work hard, you will pass.","Unless you worked hard, you will fail.","'Unless' already means 'if not', so remove 'not'.","Double negatives confuse readers."),
+  PQ("Rewriting sentences","The bell rang. The pupils went out. (Begin: As soon as…)","As soon as the bell rang, the pupils went out.","As soon as the bell rings, the pupils went out.","As soon as the pupils went out, the bell rang.","As soon as the bell rang, the pupils go out.","Keep both verbs in the past and the order of events.","Getting the order of events right matters in reports and stories."),
+  PQ("Rewriting sentences","No sooner had we arrived ___ it started raining.","than","when","then","that","'No sooner…than'; 'Hardly…when'.","Advanced sentence patterns lift composition marks."),
+  PQ("Rewriting sentences","It rained heavily. We played. (Begin: Despite…)","Despite the heavy rain, we played.","Despite it rained heavily, we played.","Despite of the heavy rain, we played.","Despite the heavy rain, but we played.","'Despite' is followed by a noun phrase, not a full clause, and never 'of'.","Shows contrast — a mark of mature writing."),
+  PQ("Letters & composition","A formal letter that begins 'Dear Sir' ends with…","Yours faithfully","Yours sincerely","Your loving friend","Bye for now","'Dear Sir/Madam' → Yours faithfully; 'Dear Mr Okello' → Yours sincerely.","Formal letters open doors: school applications, job letters, complaints."),
+  PQ("Letters & composition","In a formal letter, the receiver's address is written…","On the left, below the writer's address and date","At the very bottom","On the right, above the writer's address","It is never written","Writer's address top right, date, then receiver's address on the left.","Correct layout earns easy marks in Section B."),
+  PQ("Letters & composition","'P.T.O.' at the bottom of a page means…","Please turn over","Pupils take one","Print the original","Post to office","Abbreviations save space in notes and forms.","Knowing abbreviations helps you read official forms quickly."),
+  PQ("Letters & composition","A good composition paragraph should…","Have one main idea","Repeat the title many times","Have no full stops","Mix many unrelated ideas","One paragraph, one idea, with supporting details.","Clear paragraphs are how leaders write speeches and reports.")
+ ]
+};
+BANK.praise.Torah=TORAH_BIG.slice();
+BANK.praise["World Ahead"]=[
+ T(1,"Praise has 3 times as many pink beads as Malaika. Together they have 48. How many does Praise have?","36","12","16","45","Bar model: Malaika 1 bar, Praise 3 bars, 4 bars = 48, 1 bar = 12, so Praise has 36.","Singapore pupils draw bar models first — one reason they top world maths tests."),
+ T(1,"Pink is a tint of red. It is made by mixing red with…","White","Black","Blue","Green","Adding white makes a tint (lighter); black makes a shade (darker).","Designers mix tints to create brand colours — every pink you see was chosen on purpose."),
+ T(1,"Flamingos are pink because of…","The pigments in the food they eat","Pink feathers from birth","Sunburn","Pink water","They eat algae and shrimp full of carotenoid pigments; chicks are grey at first.","What you take in shows on the outside — true for flamingos and for minds."),
+ T(1,"A plan of how you will spend and save your money is called a…","Budget","Loan","Receipt","Tax","A budget lists income, spending and saving.","Families, schools and governments all run on budgets."),
+ T(1,"A step-by-step set of instructions for solving a problem is called…","An algorithm","A keyboard","A virus","A spreadsheet","Computers follow algorithms exactly.","Apps like mobile money run on algorithms written by programmers."),
+ T(2,"What is the probability of getting a 6 when you throw a fair die once?","1/6","1/2","6/6","1/3","One good outcome out of six possible outcomes.","Insurers, weather forecasters and sports analysts all use probability."),
+ T(2,"A price rises from UGX 20,000 to UGX 25,000. What is the percentage increase?","25%","5%","20%","50%","Increase 5,000 ÷ original 20,000 × 100 = 25%.","Spotting percentage increases protects your pocket when prices change."),
+ T(2,"x = 4. A program repeats 'x = x × 2' three times. What is x?","32","10","24","12","4 → 8 → 16 → 32.","Loops let one line of code do work millions of times."),
+ T(2,"'Everyone in my class says it, so it must be true.' This weak argument is called…","Bandwagon","Evidence","Proof","A fact","Popularity does not prove truth.","Spotting weak arguments protects you from fake news and scams."),
+ T(2,"Which uses less water to grow food in dry areas?","Drip irrigation","Flood irrigation","Sprinkling at noon","Hosepipe watering","Drip irrigation drops water straight onto roots.","Israel turned deserts into farms with drip irrigation — Uganda's farmers use it too."),
+ T(3,"A right-angled triangle has shorter sides 6 cm and 8 cm. How long is the longest side?","10 cm","14 cm","12 cm","48 cm","Pythagoras: 6² + 8² = 100, and √100 = 10.","Builders and game designers use Pythagoras every day."),
+ T(3,"UGX 100,000 earns 10% compound interest for 2 years. What is the total?","UGX 121,000","UGX 120,000","UGX 110,000","UGX 200,000","Year 1: 110,000. Year 2: 110,000 + 11,000 = 121,000.","Start saving early: interest earns more interest."),
+ T(3,"Bacteria double every hour. Starting with 1, how many after 10 hours?","1,024","20","100","512","2¹⁰ = 1,024.","Exponential growth explains epidemics, savings and viral videos."),
+ T(3,"Which of these is a good habit for avoiding fake news?","Check more than one trusted source","Share it quickly","Believe headlines only","Trust messages with many forwards","Good thinkers verify before they believe.","Clear thinking is what makes someone a game changer.")
+];
+
+/* ---------- Mathematics: PLE-style generators, one per P7 topic ---------- */
+const PMATH=[
+ ["Sets",r=>{const a=ri(r,8,25),b=ri(r,6,20),c=ri(r,2,Math.min(a,b)-1),ans=a+b-c;return M(`${a} pupils like Maths and ${b} like English. ${c} like both. How many like at least one of the two subjects?`,ans,[String(a+b),String(a+b+c),String(a-c)],`n(M ∪ E) = ${a} + ${b} − ${c} = ${ans}. Subtract those in both so they are not counted twice.`,"Venn diagrams stop planners counting the same people twice — in a census or a school survey.")}],
+ ["Sets",r=>{const a=ri(r,10,30),c=ri(r,2,a-3),b=ri(r,8,25);const ans=a-c;return M(`${a} pupils play netball and ${b} play football. ${c} play both. How many play netball only?`,ans,[String(a),String(c),String(a+b-c)],`Netball only = ${a} − ${c} = ${ans}.`,"Sorting people into groups is how shops and schools understand who they serve.")}],
+ ["Bases",r=>{const d=[ri(r,1,4),ri(r,0,4),ri(r,0,4)];const ans=d[0]*25+d[1]*5+d[2];return M(`Change ${d.join("")} (base five) to base ten.`,ans,[d.join(""),String(d[0]*5+d[1]*5+d[2]),String(ans+5)],`${d[0]}×25 + ${d[1]}×5 + ${d[2]}×1 = ${ans}.`,"Learning other bases shows how every number system works — computers count in base two.")}],
+ ["Bases",r=>{const n=ri(r,9,31),ans=n.toString(2);return M(`Change ${n} to base two.`,ans,[(n+1).toString(2),(n-1).toString(2),ans.split("").reverse().join("")],`Divide by 2 again and again; read the remainders from the bottom up: ${ans}₂.`,"Every photo and song on a phone is stored in base two.")}],
+ ["Whole numbers",r=>{const n=ri(r,10000,99999);const ans=Math.round(n/1000)*1000;const fl=Math.floor(n/1000)*1000;return M(`Round ${fmt(n)} off to the nearest thousand.`,fmt(ans),[fmt(fl===ans?ans+1000:fl),fmt(Math.round(n/100)*100),fmt(Math.round(n/10000)*10000)],`Look at the hundreds digit (${String(n).slice(-3,-2)}): 5 or more rounds up; below 5 rounds down.`,"Newspapers round big numbers — 'about 920,000 candidates' — so readers grasp them fast.")}],
+ ["Whole numbers",r=>{const R=[["MCMXC",1990],["MMXXVII",2027],["MCMLXII",1962],["CDXLIV",444],["DCCCLXXX",880],["CMXCIX",999],["MDCCCLXXVII",1877]];const [ro,v]=pick(r,R);return M(`Write ${ro} in Hindu-Arabic numerals.`,v,[String(v+10),String(v-100),String(v+9)],"M=1000, D=500, C=100, L=50, X=10, V=5, I=1. A smaller numeral before a bigger one is subtracted (CM = 900, XC = 90).","Dates on buildings and in old books are written in Roman numerals.")}],
+ ["Factors & multiples",r=>{const g=pick(r,[2,3,4,6]);const a=g*ri(r,2,7);let b=g*ri(r,2,7);if(b===a)b+=g;const h=pgcd(a,b),l=a*b/h;return r()<.5?M(`Find the LCM of ${a} and ${b}.`,l,[String(a*b===l?l*2:a*b),String(h),String(l+a)],`List multiples (or use prime factors) until they meet: LCM = ${l}.`,"LCM tells you when two repeating events line up — like two buses leaving a stage."):M(`Find the GCF (HCF) of ${a} and ${b}.`,h,[String(l),String(h*2),String(Math.max(1,h-1))],`The biggest number that divides both: ${h}.`,"GCF finds the biggest equal groups — like packing 24 pink and 36 white beads into identical bags.")}],
+ ["Square roots",r=>{const n=ri(r,11,25);return M(`Find √${n*n}.`,n,[String(n+1),String(n-1),String(n*2)],`${n} × ${n} = ${n*n}. You can also use prime factors in pairs.`,"Square roots help find the side of a square plot when you know its area.")}],
+ ["Fractions",r=>{const P=[[2,3],[3,4],[2,5],[4,6],[3,5],[4,5],[6,8],[2,7]];const [d1,d2]=pick(r,P);const a=ri(r,1,d1-1),b=ri(r,1,d2-1);const N=a*d2+b*d1,D=d1*d2;const ans=pfrac(N,D);return M(`Add: ${a}/${d1} + ${b}/${d2}`,ans,[`${a+b}/${d1+d2}`,pfrac(N+d1,D),`${a*b}/${D}`],`Common denominator ${D}: ${a*d2}/${D} + ${b*d1}/${D} = ${N}/${D} = ${ans}.`,"Recipes, tailoring and building plans all add fractions.")}],
+ ["Fractions",r=>{const d=pick(r,[3,4,5,6,8]),n=ri(r,1,d-1),q=d*ri(r,3,12);const ans=q/d*n;return M(`Praise had ${q} sweets. She gave ${n}/${d} of them to her friends. How many did she give away?`,ans,[String(q-ans),String(q/d),String(ans+n)],`${n}/${d} of ${q} = ${q} ÷ ${d} × ${n} = ${ans}.`,"Fractions of amounts are how shops calculate discounts like '¼ off'.")}],
+ ["Decimals",r=>{const a=ri(r,11,99),b=ri(r,2,9);const ans=(a*b/10).toFixed(1).replace(/\.0$/,"");return M(`Work out: ${(a/10).toFixed(1)} × ${b}`,ans,[String(a*b),(a*b/100).toFixed(2),(a*b/10+1).toFixed(1)],`Multiply ${a} × ${b} = ${a*b}, then put back one decimal place: ${ans}.`,"Fuel, medicine and market weights all use decimals.")}],
+ ["Percentages",r=>{const C=ri(r,4,40)*1000,p=pick(r,[10,20,25,40,50]),S=C*(100+p)/100;return M(`A trader bought a dress at UGX ${fmt(C)} and sold it at UGX ${fmt(S)}. Find the percentage profit.`,`${p}%`,[`${p+5}%`,`${Math.round((S-C)/S*100)}%`,`${p*2}%`],`Profit = ${fmt(S-C)}. Profit % = profit ÷ cost price × 100 = ${p}%. Always divide by the COST price.`,"Every business — from a boutique to a supermarket — checks profit % to know if it is growing.")}],
+ ["Percentages",r=>{const p=pick(r,[10,15,20,25]),Pr=ri(r,2,20)*10000,ans=Pr*(100-p)/100;return M(`A pink bag costs UGX ${fmt(Pr)}. It is sold at a ${p}% discount. What is the new price?`,`UGX ${fmt(ans)}`,[`UGX ${fmt(Pr*p/100)}`,`UGX ${fmt(Pr+Pr*p/100)}`,`UGX ${fmt(ans-1000)}`],`Discount = ${p}% of ${fmt(Pr)} = ${fmt(Pr*p/100)}. New price = ${fmt(Pr)} − ${fmt(Pr*p/100)} = ${fmt(ans)}.`,"Knowing discounts helps you spot a real bargain.")}],
+ ["Simple interest",r=>{const P=ri(r,2,20)*50000,R=pick(r,[5,10,12,15,20]),T=ri(r,2,4);const I=P*R*T/100;return M(`Find the simple interest on UGX ${fmt(P)} at ${R}% per year for ${T} years.`,`UGX ${fmt(I)}`,[`UGX ${fmt(P*R/100)}`,`UGX ${fmt(P+I)}`,`UGX ${fmt(I*2)}`],`I = P × R × T ÷ 100 = ${fmt(P)} × ${R} × ${T} ÷ 100 = ${fmt(I)}.`,"Banks and SACCOs use this formula on every loan and savings account.")}],
+ ["Ratio & proportion",r=>{const a=ri(r,1,4);let b=ri(r,a+1,7);while(pgcd(a,b)>1)b++;const u=ri(r,2,12)*1000,tot=(a+b)*u;return M(`Share UGX ${fmt(tot)} between Praise and Levi in the ratio ${a}:${b}. How much does Levi get?`,`UGX ${fmt(b*u)}`,[`UGX ${fmt(a*u)}`,`UGX ${fmt(u)}`,`UGX ${fmt(tot-u)}`],`Total parts = ${a+b}. One part = ${fmt(tot)} ÷ ${a+b} = ${fmt(u)}. Levi gets ${b} parts = ${fmt(b*u)}.`,"Business partners share profits using ratios.")}],
+ ["Ratio & proportion",r=>{const m=ri(r,3,8),d=ri(r,2,6),n=m*d,k=ri(r,2,5);return M(`${m} workers take ${n} days to dig a garden. How long would ${m*k} workers take at the same rate?`,`${n/k} days`,[`${n*k} days`,`${n+k} days`,`${n-k} days`],`More workers, fewer days (inverse proportion): ${m} × ${n} = ${m*n} worker-days ÷ ${m*k} = ${n/k} days.`,"Contractors use this to plan how many workers a project needs.")}],
+ ["Speed, distance & time",r=>{const s=pick(r,[40,45,50,60,80,90]),t=pick(r,[2,3,4]),d=s*t;return r()<.5?M(`A bus travels ${d} km in ${t} hours. What is its average speed?`,`${s} km/h`,[`${d*t} km/h`,`${s+10} km/h`,`${d-t} km/h`],`Speed = distance ÷ time = ${d} ÷ ${t} = ${s} km/h.`,"Drivers and pilots plan journeys with this formula."):M(`A car moves at ${s} km/h. How long does it take to cover ${d} km?`,`${t} hours`,[`${t+1} hours`,`${d*s} hours`,`${t*2} hours`],`Time = distance ÷ speed = ${d} ÷ ${s} = ${t} hours.`,"This is how journey times on a map app are calculated.")}],
+ ["Time",r=>{const h=ri(r,13,23),m=pick(r,[0,15,20,30,45,50]);return M(`Write ${pad2(h)}${pad2(m)} hours in the 12-hour clock.`,`${h-12}:${pad2(m)} p.m.`,[`${h-12}:${pad2(m)} a.m.`,`${h-10}:${pad2(m)} p.m.`,`${h}:${pad2(m)} p.m.`],`Subtract 12 from hours after noon: ${h} − 12 = ${h-12}, so ${h-12}:${pad2(m)} p.m.`,"Bus, flight and exam timetables use the 24-hour clock.")}],
+ ["Algebra",r=>{const x=ri(r,2,12),a=ri(r,2,6),b=ri(r,1,a*x-1),c=a*x-b;return M(`Solve: ${a}y − ${b} = ${c}`,`y = ${x}`,[`y = ${x+1}`,`y = ${c+b}`,`y = ${Math.max(1,x-2)}`],`Add ${b} to both sides: ${a}y = ${c+b}. Divide by ${a}: y = ${x}.`,"Equations find unknown prices, distances and amounts in real problems.")}],
+ ["Algebra",r=>{const x=ri(r,1,9),a=ri(r,2,5),b=ri(r,1,6),c=a*(x+b);return M(`Solve: ${a}(m + ${b}) = ${c}`,`m = ${x}`,[`m = ${x+b}`,`m = ${c-b}`,`m = ${x+1}`],`Divide both sides by ${a}: m + ${b} = ${x+b}. Subtract ${b}: m = ${x}.`,"Opening brackets correctly is the key to secondary school algebra.")}],
+ ["Algebra",r=>{const a=ri(r,2,6),b=ri(r,2,6),ans=a*a+2*b;return M(`If a = ${a} and b = ${b}, find the value of a² + 2b.`,ans,[String(2*a+2*b),String(a*a+b),String((a+b)*2)],`a² = ${a*a}, 2b = ${2*b}. Total = ${ans}.`,"Spreadsheets substitute values into formulas like this millions of times a day.")}],
+ ["Integers",r=>{const t=ri(r,-6,6),c=ri(r,3,12);return M(`At night the temperature was ${t}°C. By morning it had dropped by ${c}°C. What was the morning temperature?`,`${t-c}°C`,[`${t+c}°C`,`${c-t}°C`,`${t-c+2}°C`],`${t} − ${c} = ${t-c}. On a number line, move ${c} steps to the left.`,"Integers measure temperatures, bank balances and heights below sea level.")}],
+ ["Data handling",r=>{const mean=ri(r,12,60);const xs=[0,0,0,0].map(()=>mean+ri(r,-9,9));const last=5*mean-xs.reduce((s,x)=>s+x,0);const all=[...xs,last];return M(`Find the mean of: ${all.join(", ")}`,mean,[String(mean+2),String(Math.max(...all)),String(5*mean)],`Add them: ${5*mean}. Divide by 5: ${mean}.`,"Teachers find class averages; farmers find the average harvest per acre.")}],
+ ["Data handling",r=>{let a=ri(r,2,8),b=ri(r,2,8);if(a===b)b++;return M(`A bag has ${a} pink beads and ${b} white beads. One bead is picked at random. What is the probability that it is pink?`,pfrac(a,a+b),[`${a}/${b}`,pfrac(b,a+b),`1/${a+b}`],`Probability = pink beads ÷ all beads = ${a}/${a+b}${pfrac(a,a+b)!==a+"/"+(a+b)?" = "+pfrac(a,a+b):""}.`,"Probability is how weather forecasters say '70% chance of rain'.")}],
+ ["Geometry",r=>{const N={5:"pentagon",6:"hexagon",8:"octagon",9:"nonagon",10:"decagon",12:"dodecagon"};const n=pick(r,[5,6,8,9,10,12]),ext=360/n,int=180-ext;const t=ri(r,0,2);
+  return t===0?M(`Find the sum of the interior angles of a ${N[n]} (${n} sides).`,`${(n-2)*180}°`,[`${n*180}°`,`${(n-1)*180}°`,"360°"],`Sum = (n − 2) × 180° = ${n-2} × 180° = ${(n-2)*180}°.`,"Architects and tilers need angle sums so shapes fit together without gaps."):
+   t===1?M(`Find the size of each exterior angle of a regular ${N[n]}.`,`${ext}°`,[`${int}°`,`${ext*2}°`,`${180/n|0}°`],`Exterior angles of any polygon add up to 360°: 360° ÷ ${n} = ${ext}°.`,"Robots and drones turn by exterior angles to trace shapes."):
+   M(`Find the size of each interior angle of a regular ${N[n]}.`,`${int}°`,[`${ext}°`,`${int+10}°`,"180°"],`Exterior = 360° ÷ ${n} = ${ext}°. Interior = 180° − ${ext}° = ${int}°.`,"Bees build hexagons (120° angles) — the strongest shape for honeycombs.")}],
+ ["Area & volume",r=>{const rr=pick(r,[7,14,21,28,35]);return r()<.5?M(`Find the area of a circle of radius ${rr} cm. (Use π = 22/7)`,`${22*rr*rr/7} cm²`,[`${44*rr/7} cm²`,`${22*rr/7} cm²`,`${22*rr*rr*2/7} cm²`],`Area = πr² = 22/7 × ${rr} × ${rr} = ${22*rr*rr/7} cm².`,"Engineers calculate circle areas for water tanks, pipes and roundabouts."):M(`Find the circumference of a circle of radius ${rr} cm. (Use π = 22/7)`,`${44*rr/7} cm`,[`${22*rr*rr/7} cm`,`${22*rr/7} cm`,`${44*rr/7+7} cm`],`C = 2πr = 2 × 22/7 × ${rr} = ${44*rr/7} cm.`,"Bicycle makers use circumference to know how far one turn of a wheel goes.")}],
+ ["Area & volume",r=>{const l=ri(r,3,10)*10,w=ri(r,2,8)*10,h=ri(r,2,6)*10,v=l*w*h/1000;return M(`A tank is ${l} cm long, ${w} cm wide and ${h} cm high. How many litres of water can it hold?`,`${v} litres`,[`${l*w*h} litres`,`${v*10} litres`,`${(l+w+h)} litres`],`Volume = ${l} × ${w} × ${h} = ${fmt(l*w*h)} cm³. 1,000 cm³ = 1 litre, so ${v} litres.`,"Rainwater tanks are sized this way so families have water in the dry season.")}],
+ ["Money",r=>{const a=ri(r,2,5),x=ri(r,2,9)*500,b=ri(r,2,4),y=pick(r,[500,1000,1500]),cost=a*x+b*y,note=Math.ceil((cost+500)/10000)*10000;return M(`Praise bought ${a} books at UGX ${fmt(x)} each and ${b} pens at UGX ${fmt(y)} each. She paid with UGX ${fmt(note)}. What was her change?`,`UGX ${fmt(note-cost)}`,[`UGX ${fmt(cost)}`,`UGX ${fmt(note-a*x)}`,`UGX ${fmt(note-cost+500)}`],`Cost = ${a}×${fmt(x)} + ${b}×${fmt(y)} = ${fmt(cost)}. Change = ${fmt(note)} − ${fmt(cost)} = ${fmt(note-cost)}.`,"Checking your change is a lifelong money skill.")}]
+];
+GEN.praise=PMATH.map(x=>x[1]);
+NEXT_UP.praise="daudi";
+SUBJECTS.praise=[["Mathematics","📐"],["English","✍️"],["Science","🔬"],["SST","🌍"],["World Ahead","🌐"],["Torah","📜"]];
+ADVENTURE.praise={title:"Road to Aggregate 4",sub:"8 PLE questions from all four subjects. Every right answer lights a pink diamond on your road to Division One.",n:8,icon:"💎"};
+ARCADE.praise=["exam","bee","spot","tf","sowhat","scramble","match"];
+RANKS.praise=["Candidate","Scholar","Achiever","Prefect","Head Girl","Distinction","Division One","Pink Diamond","Aggregate 4","Legend"];
+PLE_MAP.praise={Mathematics:"Mathematics",English:"English",Science:"Science",SST:"Social Studies"};
+
+/* ---------- PLE practice papers (marked, with full answers) ---------- */
+const PAPER_SUBJ=[["Mathematics","📐"],["English","✍️"],["Science","🔬"],["SST","🌍"]];
+function paperQs(k,subject,n,r,theme){
+ if(subject==="Mathematics"){const gens=theme?PMATH.filter(g=>g[0]===theme):shuffle(r,PMATH);const out=[];let i=0;
+  while(out.length<n&&i<n*6){const [th,g]=gens[i%gens.length];const q=g(r);i++;if(out.some(o=>o.q===q.q))continue;out.push({...q,theme:th})}return out.map(q=>({...q,subject,section:`Mathematics · ${q.theme}`}))}
+ const pool=BANK[k][subject].filter(q=>!theme||q.theme===theme);
+ return shuffle(r,pool).slice(0,n).map(q=>({...q,subject,section:`${subject==="SST"?"Social Studies":subject} · ${q.theme}`}))}
+function buildPaper(k,which,theme){const r=rng(Date.now());let qs;
+ if(which==="__mock")qs=PAPER_SUBJ.flatMap(([s])=>paperQs(k,s,10,r));
+ else qs=paperQs(k,which,theme?10:20,r,theme);
+ return qs.map(q=>({...q,order:shuffle(r,[...q.opts.keys()])}))}
+function praiseMisses(k){const seen=new Set(),out=[];
+ for(const a of of(k).slice().sort((x,y)=>y.ts-x.ts))for(const m of a.missed||[]){const i=m.indexOf(": ");if(i<0)continue;const s=m.slice(0,i),t=m.slice(i+2);
+  const bank=BANK[k][s];if(!bank)continue;const q=bank.find(b=>b.q.slice(0,90)===t);if(q&&!seen.has(q.q)){seen.add(q.q);out.push({...q,subject:s,section:`${s} · ${q.theme||"Revision"}`})}}
+ return out.slice(0,20)}
+function pleCountdown(){const ple=new Date("2027-11-01T00:00"),now=new Date(dayStr()+"T00:00");const wks=Math.max(0,Math.round((ple-now)/(7*864e5)));
+ return`<div class="bday" style="background:repeating-linear-gradient(45deg,#d6246e 0 14px,#e8478a 14px 28px)">💎 PLE 2027 · about ${wks} weeks to go. Aim: D1 in all four — aggregate 4.</div>`}
+function paperCard(k){const miss=praiseMisses(k);const themes=s=>s==="Mathematics"?[...new Set(PMATH.map(g=>g[0]))]:[...new Set(BANK[k][s].map(q=>q.theme))];
+ const cnt=(s,t)=>s==="Mathematics"?"∞":BANK[k][s].filter(q=>q.theme===t).length;
+ return`<div class="sect">PLE practice papers</div><div class="feature"><h3>📝 PLE-style papers · with answers</h3>
+  <p>Fresh papers every time, in the style of past PLE questions, covering the whole P7 year plus P4–P6 revision. When you finish you get the full marking guide: every answer, the working and the "so what".</p>
+  <div class="row"><button class="btn" data-paper="__mock">Full mock · 40 questions</button>${PAPER_SUBJ.map(([s,ic])=>`<button class="btn" data-paper="${s}">${ic} ${s==="SST"?"SST":s} · 20</button>`).join("")}${miss.length?`<button class="btn" data-paper="__miss" style="background:#8e24aa">Fix my mistakes · ${miss.length}</button>`:""}</div>
+  ${PAPER_SUBJ.map(([s,ic])=>`<details><summary style="cursor:pointer;font-weight:700;margin-top:6px">${ic} Revise ${s==="SST"?"Social Studies":s} by topic</summary><div class="row" style="margin-top:8px">${themes(s).map(t=>`<button class="back" data-paper="${s}" data-theme="${esc(t)}">${esc(t)}${s==="Mathematics"?"":" · "+cnt(s,t)}</button>`).join("")}</div></details>`).join("")}
+  <div class="tiny" style="opacity:.8">These are practice questions written in the PLE style, not copies of UNEB papers.</div></div>`}
+function bindPapers(k){document.querySelectorAll("[data-paper]").forEach(b=>b.onclick=()=>{const v=b.dataset.paper,th=b.dataset.theme;
+ if(v==="__miss")return startPlay(k,"Fix my mistakes","paper",praiseMisses(k),{title:"Fix my mistakes"});
+ const title=v==="__mock"?"PLE full mock":th?`${v==="SST"?"Social Studies":v} · ${th}`:`PLE ${v==="SST"?"Social Studies":v} paper`;
+ startPlay(k,v==="__mock"?"PLE mock":v,"paper",[1],{title,fresh:()=>buildPaper(k,v,th)})})}
 
 function makeQuestion(kid,subject,r){
  if(kid==="israel")return ISRAEL[subject](r);
@@ -852,6 +1120,9 @@ function drawCardArt(c){
   const cx2=w*.6,cy2=h*.86;x.fillStyle="rgba(242,107,29,.55)";x.beginPath();x.moveTo(cx2-80,cy2);x.lineTo(cx2-70,cy2-22);x.lineTo(cx2-30,cy2-34);x.lineTo(cx2+30,cy2-34);x.lineTo(cx2+70,cy2-16);x.lineTo(cx2+84,cy2);x.closePath();x.fill();x.fillStyle="#1d1d21";[cx2-48,cx2+50].forEach(t=>{x.beginPath();x.arc(t,cy2,15,0,7);x.fill()});x.fillStyle="#9a9aa3";[cx2-48,cx2+50].forEach(t=>{x.beginPath();x.arc(t,cy2,6,0,7);x.fill()})}
  if(k==="malaika"){x.fillStyle="#f8c8dc";x.strokeStyle="#e8357a";x.lineWidth=3;[[.66,.62,.1,.38],[.86,.62,.1,.38],[.73,.72,.16,.28]].forEach(([a,b,c,d])=>{x.fillRect(w*a,h*b,w*c,h*d);x.strokeRect(w*a,h*b,w*c,h*d)});x.fillStyle="#e8357a";[[.66,.1],[.86,.1]].forEach(([a,c])=>{x.beginPath();x.moveTo(w*a,h*.62);x.lineTo(w*(a+c/2),h*.48);x.lineTo(w*(a+c),h*.62);x.fill()});
   x.fillStyle="#e8357a";for(let i=0;i<8;i++){x.font=`${18+r()*14}px serif`;x.fillText("✦",w*.45+r()*w*.5,h*.1+r()*h*.4)}}
+ if(k==="praise"){const gem=(cx,cy,s,a)=>{x.globalAlpha=a;x.beginPath();x.moveTo(cx,cy-s);x.lineTo(cx+s*.8,cy-s*.35);x.lineTo(cx,cy+s);x.lineTo(cx-s*.8,cy-s*.35);x.closePath();x.fill();x.globalAlpha=a*.9;x.strokeStyle="#fff";x.lineWidth=2;x.beginPath();x.moveTo(cx-s*.8,cy-s*.35);x.lineTo(cx+s*.8,cy-s*.35);x.moveTo(cx-s*.35,cy-s*.35);x.lineTo(cx,cy+s);x.lineTo(cx+s*.35,cy-s*.35);x.stroke()};
+  x.fillStyle="#ffd6e8";gem(w*.83,h*.68,h*.2,.9);x.fillStyle="#fff";[[.66,.78,.06],[.95,.5,.05],[.72,.56,.05]].forEach(([a,b,c])=>gem(w*a,h*b,h*c,.5));
+  x.fillStyle="#fff";for(let i=0;i<7;i++){x.globalAlpha=.35+r()*.4;x.font=`${12+r()*10}px serif`;x.fillText("✦",w*.55+r()*w*.42,h*.45+r()*h*.5)}x.globalAlpha=1}
  if(k==="israel"){x.fillStyle="#ff8a00";x.beginPath();x.arc(w*.86,h*.2,h*.12,0,7);x.fill();for(let i=0;i<12;i++){const a=i/12*6.28;x.strokeStyle="#ff8a00";x.lineWidth=5;x.beginPath();x.moveTo(w*.86+Math.cos(a)*h*.16,h*.2+Math.sin(a)*h*.16);x.lineTo(w*.86+Math.cos(a)*h*.22,h*.2+Math.sin(a)*h*.22);x.stroke()}
   ["#e8357a","#8e24aa","#1e88e5"].forEach((c2,i)=>{const fx=w*(.62+i*.12),fy=h*.82;x.strokeStyle="#43a047";x.lineWidth=5;x.beginPath();x.moveTo(fx,h);x.lineTo(fx,fy);x.stroke();x.fillStyle=c2;for(let p=0;p<5;p++){const a=p/5*6.28;x.beginPath();x.arc(fx+Math.cos(a)*14,fy+Math.sin(a)*14,11,0,7);x.fill()}x.fillStyle="#fdd835";x.beginPath();x.arc(fx,fy,9,0,7);x.fill()})}
 }
@@ -869,21 +1140,21 @@ function renderKid(k){
  const A=ADVENTURE[k];
  $("#app").innerHTML=`<div class="world" data-kid="${k}">${k==="levi"?'<canvas id="stars"></canvas>':""}<div class="wrap">
   <div class="topbar"><button class="back" data-go="">← Family</button><span class="tiny" style="opacity:.75">${esc(clsOf(k))}</span></div>
-  ${bday}
+  ${bday}${k==="praise"?pleCountdown():""}
   <div class="hello"><div><h1>${greet()} ${esc(nameOf(k))}</h1><div class="sub">${esc(K.theme)} · ${crown?"👑 All of today's quests done — champion!":`${done} of ${subs.length} quests done today`}</div></div>
    <div class="chips">${(()=>{const L=levelOf(k);return`<span class="chip">Level ${L.lvl} · ${esc(L.rank)}</span>`})()}<span class="chip">⭐ ${stars(k,today)} today</span><span class="chip">🌟 ${stars(k)} total</span><span class="chip">🔥 ${streak(k)}-day streak</span></div></div>
   ${levelBar(k)}
   <div class="sect">Today's quests</div>
   <div class="quests">${subs.map(([s,ic])=>{const d=questDone(k,s,today);return`<button class="quest ${d?"done":""}" data-quest="${s}">
      <span class="ic">${ic}</span><span class="t">${s}</span><span class="s">${d?`✓ ${d.score}/${d.total} · play again`:k==="israel"?"Tap to play":"5 questions"}</span></button>`}).join("")}</div>
-  ${k==="malaika"?examCard(k):""}
+  ${k==="malaika"?examCard(k):""}${k==="praise"?paperCard(k):""}
   <div class="sect">Arcade</div>
   <div class="arcade">${ARCADE[k].map(g=>{const [ic,t,d]=ARCADE_INFO[g];const best=of(k).filter(a=>(a.style||a.mode)===g).reduce((m,a)=>Math.max(m,a.total?Math.round(a.score/a.total*100):0),0);
     return`<button class="game" data-arc="${g}"><span class="gi">${ic}</span><span class="gt">${k==="israel"&&g==="match"?"Picture pairs":t}</span><span class="gs">${k==="israel"&&g==="match"?"Find two that are the same!":d}</span>${best?`<span class="gb">Best: ${best}%</span>`:""}</button>`}).join("")}</div>
   <div class="sect">Games</div>
   <div class="big2">
    <div class="feature"><h3>${A.icon} ${A.title}</h3><p>${A.sub}</p><div><button class="btn" id="adv">Start</button></div></div>
-   ${k!=="israel"?`<div class="feature"><h3>${k==="malaika"?"✦ Crown Sprint":"🏎️ Pit-Stop Sprint"}</h3><p>60 seconds of maths. ${k==="malaika"?"Every right answer earns a sparkle.":"Every right answer drives your car closer to the flag."} Beat your best: <b>${bestSprint(k)}</b>.</p><div><button class="btn" id="sprint">Go!</button></div></div>`
+   ${k!=="israel"?`<div class="feature"><h3>${k==="malaika"?"✦ Crown Sprint":k==="praise"?"💎 Diamond Sprint":"🏎️ Pit-Stop Sprint"}</h3><p>60 seconds of maths. ${k==="malaika"?"Every right answer earns a sparkle.":k==="praise"?"Every right answer adds a diamond to your crown.":"Every right answer drives your car closer to the flag."} Beat your best: <b>${bestSprint(k)}</b>.</p><div><button class="btn" id="sprint">Go!</button></div></div>`
      :`<div class="feature"><h3>🔊 Listen &amp; tap</h3><p>Every question can be read aloud — press the speaker button and tap the picture.</p><div><button class="btn" data-quest="Counting">Count with me</button></div></div>`}
   </div>
   ${torahMoment(k,today)}
@@ -894,6 +1165,7 @@ function renderKid(k){
  document.querySelectorAll("[data-quest]").forEach(b=>b.onclick=()=>startPlay(k,b.dataset.quest,"quest"));
  $("#adv").onclick=()=>startPlay(k,"__mix","adventure");
  if(k==="malaika")bindExam(k);
+ if(k==="praise")bindPapers(k);
  document.querySelectorAll("[data-arc]").forEach(b=>b.onclick=()=>startArcade(k,b.dataset.arc));
  const sp=$("#sprint");if(sp)sp.onclick=()=>startSprint(k);
  if(k==="levi")drawStars();
@@ -953,7 +1225,7 @@ function drawPlay(){
   <div class="play-head"><h2>${esc(title)}</h2><button class="back" id="quit">✕ Stop</button></div>
   <div class="vis">${visual(k,P)}</div>
   <div class="qcard">
-   <div class="row" style="justify-content:space-between"><span class="qnum">Question ${P.i+1} of ${P.qs.length}${q.section?" · "+q.section:P.mode==="adventure"?" · "+q.subject:q.theme&&P.mode==="exam"?" · "+q.theme:""}</span>${canSpeak()?`<button class="speak" id="say">🔊 Read it</button>`:""}</div>
+   <div class="row" style="justify-content:space-between"><span class="qnum">Question ${P.i+1} of ${P.qs.length}${q.section?" · "+q.section:P.mode==="adventure"?" · "+q.subject:q.theme&&(P.mode==="exam"||P.mode==="paper")?" · "+q.theme:""}</span>${canSpeak()?`<button class="speak" id="say">🔊 Read it</button>`:""}</div>
    ${q.stretch?`<div class="qnum" style="color:var(--w-acc)">🚀 Stretch question — from the class ahead</div>`:""}<div class="qtext">${esc(q.q)}</div>${show}
    <div class="opts">${q.order.map(i=>`<button class="opt" data-i="${i}">${optLabel(q.opts[i])}</button>`).join("")}</div>
    <div id="fb"></div>
@@ -968,8 +1240,8 @@ function answer(i){
  const P=PLAY;if(P.answered)return;P.answered=true;const q=P.qs[P.i],ok=i===0;
  document.querySelectorAll(".opt").forEach(b=>{b.disabled=true;const j=+b.dataset.i;if(j===0)b.classList.add("right");else if(j===i)b.classList.add("wrong")});
  if(ok)P.score++;else P.missed.push(`${q.subject}: ${q.q.slice(0,90)}`);
- P.results.push({s:q.subject,ok});
- const cheers=P.kid==="israel"?["Yay!","Super!","Clever you!","Well done!"]:P.kid==="malaika"?["Brilliant, Princess!","You're a shining star!","Royal thinking!","Sparkling — yes!"]:P.kid==="levi"?["Engines firing!","Mission success!","Out of this world!","Spot on, commander!"]:["Swish!","Nothing but net.","Sharp.","Three-pointer!"];
+ P.results.push({s:q.subject,ok,q:q.q,a:cleanOpt(q.opts[0]),c:cleanOpt(q.opts[i]),why:q.why,sec:q.section||q.theme||q.subject});
+ const cheers=P.kid==="israel"?["Yay!","Super!","Clever you!","Well done!"]:P.kid==="malaika"?["Brilliant, Princess!","You're a shining star!","Royal thinking!","Sparkling — yes!"]:P.kid==="praise"?["Brilliant, Praise!","Division One thinking!","Pink-diamond sharp!","Aggregate-4 work!"]:P.kid==="levi"?["Engines firing!","Mission success!","Out of this world!","Spot on, commander!"]:["Swish!","Nothing but net.","Sharp.","Three-pointer!"];
  const tries=P.kid==="israel"?["Nearly! Let's look again.","Good try!"]:["Not this time —","Close —"];
  const correctText=q.opts[0].includes("|")?q.opts[0].split("|")[1]:q.opts[0];
  $("#fb").innerHTML=`<div class="fb pop"><div class="ok">${ok?pick(Math.random,cheers):pick(Math.random,tries)+(P.kid==="israel"?"":" the answer is "+esc(correctText)+".")}</div>
@@ -989,7 +1261,9 @@ async function finishPlay(){
   <div class="qcard result pop"><div class="big">⭐ ${P.score}/${P.qs.length}</div><h2 style="margin:10px 0 6px">${msg}</h2>
   ${P.missed.length&&k!=="israel"?`<p class="tiny">Ask Mum or Dad about: ${esc(P.missed[0].split(": ")[0])} — and tell them the "so what".</p>`:""}
   <div class="row" style="justify-content:center;margin-top:14px"><button class="btn" id="again">Play again</button><button class="back" id="home">Back to my world</button></div>
-  <div class="status" id="savest" style="margin-top:10px">Saving your stars…</div></div></div>`;
+  <div class="status" id="savest" style="margin-top:10px">Saving your stars…</div>
+  ${k==="praise"&&P.mode==="paper"?`<p style="margin-top:10px"><b>${pct>=.8?"💎 D1 pace":pct>=.7?"D2 pace — so close":pct>=.6?"C3 pace — keep building":"Needs focus — use Fix my mistakes"}</b> · ${Math.round(pct*100)}% (D1 pace is 80%+)</p>`:""}
+  ${k!=="israel"&&P.results.length&&P.results[0].q?`<details class="answers" ${P.mode==="paper"?"open":""}><summary>📋 Answers &amp; marking guide</summary><ol>${P.results.map(x=>`<li><div class="tiny" style="opacity:.75">${esc(x.sec)}</div><div><b>${esc(x.q)}</b></div><div>${x.ok?`<span class="ok">✓ ${esc(x.a)}</span>`:`<span class="no">✗ You chose: ${esc(x.c)}</span> · <span class="ok">Answer: ${esc(x.a)}</span>`}</div><div class="tiny">${esc(x.why)}</div></li>`).join("")}</ol></details>`:""}</div></div>`;
  if(k==="israel")speak(msg);
  $("#again").onclick=()=>{const {kid,subject,mode,pool,poolLabel}=P;startPlay(kid,subject,mode,pool,poolLabel)};
  $("#home").onclick=()=>{el.remove();PLAY=null;render()};
@@ -1030,6 +1304,14 @@ function visual(k,P,afterAnswer,final){
    <text x="110" y="40" font-family="Baloo 2,sans-serif" font-size="14" fill="#9a9aa3" letter-spacing="2">SHOT</text><text x="110" y="72" font-family="Baloo 2,sans-serif" font-size="34" font-weight="800" fill="#f4efe9">${Math.min(P.i+1,n)}/${n}</text>
    ${afterAnswer&&last?`<text x="300" y="60" font-family="Baloo 2,sans-serif" font-size="30" font-weight="800" fill="${last.ok?"#ffd27a":"#9a9aa3"}">${last.ok?"SWISH! +2":"Rim out"}</text>`:""}
    ${shots}${final?`<text x="300" y="120" font-family="Baloo 2,sans-serif" font-size="22" font-weight="700" fill="#f4efe9">${pts>=20?"Perfect game!":pts>=14?"You won the game!":"Final buzzer — run it back!"}</text>`:""}</svg>`}
+ if(k==="praise"){const W=640,H=130,sp=(W-140)/Math.max(n,1),sz=Math.max(5,Math.min(15,sp*.42)),answered=res.length,pct=answered?Math.round(okCount/answered*100):0,won=final&&okCount/n>=.8;
+  const g=(cx,cy,s,f,st)=>`<path d="M${cx} ${cy-s} L${cx+s*.8} ${cy-s*.35} L${cx} ${cy+s} L${cx-s*.8} ${cy-s*.35}Z" fill="${f}" stroke="${st}" stroke-width="1.5"/>`;
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${okCount} diamonds lit of ${n}"><rect width="${W}" height="${H}" fill="#fff0f6"/>
+   <line x1="20" y1="62" x2="${W-110}" y2="62" stroke="#f5b8d2" stroke-width="3" stroke-dasharray="3 6"/>
+   ${Array.from({length:n},(_,i)=>{const cx=20+sp*i+sp/2;const r0=res[i];return g(cx,60,sz,r0?(r0.ok?"#c81d63":"#e9c9d7"):"#fff",r0&&r0.ok?"#8f0f45":"#f0a8c8")}).join("")}
+   <circle cx="${W-58}" cy="58" r="40" fill="${won?"#ffd27a":"#ffdbea"}" stroke="#c81d63" stroke-width="3"/>
+   <text x="${W-58}" y="76" text-anchor="middle" font-family="Baloo 2,sans-serif" font-size="50" font-weight="800" fill="#c81d63">4</text>
+   <text x="20" y="118" font-family="Baloo 2,sans-serif" font-size="17" font-weight="700" fill="#4a1030">${okCount} right of ${n}${answered>=5?` · ${pct}% so far · D1 pace is 80%`:""}${won?" · Division One! 👑":""}</text></svg>`}
  /* israel */
  const W=640,H=130;return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${okCount} flowers bloomed"><rect width="${W}" height="${H}" fill="#fff1c2"/><rect y="110" width="${W}" height="20" fill="#8bc34a"/>
   ${Array.from({length:n},(_,i)=>{const x=60+i*((W-120)/(n-1||1)),bloom=i<okCount,c=["#e8357a","#8e24aa","#1e88e5","#ff6a00","#e53935","#43a047"][i%6];
@@ -1152,6 +1434,36 @@ const BEE_LEVELS={
   ["exaggerate","to make something sound bigger than it is","Don't exaggerate — it was only a small spider."],
   ["questionnaire","a list of questions to answer","Fill in the questionnaire about your favourite books."]]}
 };
+BEE_LEVELS.busy.only="malaika";
+BEE_LEVELS.ple={only:"praise",name:"PLE Hive",icon:"💎",sub:"P7 words that appear in PLE answers",words:[
+ ["environment","everything around us: air, water, plants and animals","We must protect the environment by planting trees."],
+ ["government","the people who run a country","The government built a new hospital in our district."],
+ ["parliament","the group of people elected to make laws","Parliament passed a new law on education."],
+ ["independence","freedom from being ruled by another country","Uganda got its independence in 1962."],
+ ["equator","the imaginary line around the middle of the Earth","The equator passes through Uganda."],
+ ["continent","one of the seven very large areas of land","Africa is the second largest continent."],
+ ["temperature","how hot or cold something is","The temperature dropped at night."],
+ ["conductor","a material that lets heat or electricity pass through","Copper is a good conductor of electricity."],
+ ["skeleton","the frame of bones in the body","The skeleton protects the body's organs."],
+ ["excretion","removing waste made by the body's cells","The kidneys carry out excretion."],
+ ["population","the number of people living in a place","The population of Kampala is growing fast."],
+ ["constitution","the highest set of laws of a country","The constitution protects the rights of every citizen."],
+ ["committee","a small group chosen to do a special job","The class committee planned the party."],
+ ["perpendicular","meeting another line at a right angle","Draw a line perpendicular to the base."],
+ ["circumference","the distance round a circle","Find the circumference of the wheel."],
+ ["percentage","a part out of one hundred","Her percentage score was ninety."],
+ ["denominator","the bottom number of a fraction","In three quarters, the denominator is four."],
+ ["photosynthesis","how green plants make food using sunlight","Photosynthesis takes place in the leaves."],
+ ["pollination","moving pollen from the anther to the stigma","Bees help in pollination."],
+ ["colonialism","rule of one country over another country's people","Colonialism changed Africa's borders."],
+ ["assimilation","the French policy of making Africans live like the French","Assimilation was used in Senegal."],
+ ["referee","a person who makes sure a game follows the rules","The referee blew the whistle."],
+ ["occurred","happened","The accident occurred near the school."],
+ ["receive","to get something that is given","I will receive my results next year."],
+ ["achievement","something done well through effort","An aggregate of four is a great achievement."],
+ ["neighbour","a person who lives next to you","Our neighbour gave us mangoes."],
+ ["successful","having done what you wanted to do","She was successful in her exams."],
+ ["disappear","to go out of sight","The sun will disappear behind the clouds."]]};
 function beeSentence(w,s){return s.replace(new RegExp(w,"ig"),"_____")}
 function beeMisspell(word,r){const w=word,out=new Set(),lw=w;
  const tries=[
@@ -1165,15 +1477,15 @@ function beeMisspell(word,r){const w=word,out=new Set(),lw=w;
   ()=>{const i=1+Math.floor(r()*(lw.length-1));return lw.slice(0,i)+lw.slice(i+1)}];
  for(let n=0;n<80&&out.size<3;n++){const f=tries[Math.floor(r()*tries.length)];const x=f();if(x&&x!==w&&x.length>2&&!out.has(x))out.add(x)}
  return[...out]}
-function beeAll(){return Object.values(BEE_LEVELS).flatMap(L=>L.words)}
-function buildSpot(k){const r=rng(Date.now());const ws=shuffle(r,beeAll()).slice(0,12);
+function beeAll(k){return Object.values(BEE_LEVELS).filter(L=>!L.only||L.only===k).flatMap(L=>L.words)}
+function buildSpot(k){const r=rng(Date.now());const ws=shuffle(r,beeAll(k)).slice(0,12);
  return ws.map(([w,d,s])=>{const wrong=beeMisspell(w,r);while(wrong.length<3)wrong.push(w+"e".repeat(wrong.length+1));
   return{q:`Which is spelled correctly? (${d})`,opts:[w,...wrong.slice(0,3)],why:`“${w}” — ${s}`,subject:"English",order:shuffle(r,[0,1,2,3])}})}
 function startBee(k){const el=overlay(k);PLAY={kid:k,bee:true};
  const best=lv=>of(k).filter(a=>a.style==="bee"&&a.level===lv).reduce((m,a)=>Math.max(m,a.score),0);
  el.innerHTML=`<div class="inner"><div class="play-head"><h2>🐝 Spelling Bee</h2><button class="back" id="quit">✕ Stop</button></div>
   <div class="qcard"><div class="qtext">Choose your hive, wordsmith.</div><p style="margin-top:-6px">Listen to the word, ask for the meaning or a sentence, then spell it. Ten words a round.</p>
-  <div class="arcade">${Object.entries(BEE_LEVELS).map(([id,L])=>`<button class="game" data-lv="${id}"><span class="gi">${L.icon}</span><span class="gt">${L.name}</span><span class="gs">${esc(L.sub)}</span><span class="gb">${best(id)?`Best: ${best(id)}/10`:"New hive"}</span></button>`).join("")}</div>
+  <div class="arcade">${Object.entries(BEE_LEVELS).filter(([,L])=>!L.only||L.only===k).map(([id,L])=>`<button class="game" data-lv="${id}"><span class="gi">${L.icon}</span><span class="gt">${L.name}</span><span class="gs">${esc(L.sub)}</span><span class="gb">${best(id)?`Best: ${best(id)}/10`:"New hive"}</span></button>`).join("")}</div>
   ${canSpeak()?"":`<p class="tiny" style="margin-top:12px">This gadget can't speak words aloud, so you'll get the meaning and a sentence with a gap instead.</p>`}</div></div>`;
  $("#quit").onclick=closeOverlay;
  el.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>runBee(k,b.dataset.lv));
@@ -1291,6 +1603,7 @@ function startSprint(k){
  next();
 }
 function sprintVis(k,sc,left){const W=640,H=70;
+ if(k==="praise")return`<div class="vis"><svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#fff0f6"/>${Array.from({length:Math.min(sc,24)},(_,i)=>`<text x="${12+i*26}" y="44" font-size="22">${i%5===4?"👑":"💎"}</text>`).join("")}<text x="10" y="64" font-size="12" fill="#4a1030">${sc} diamonds</text></svg></div>`;
  if(k==="malaika")return`<div class="vis"><svg viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#fff6fa"/>${Array.from({length:Math.min(sc,24)},(_,i)=>`<text x="${12+i*26}" y="44" font-size="22">${i%3===2?"👑":"✦"}</text>`).join("")}</svg></div>`;
  const x=20+Math.min(sc,30)/30*(W-90);
  return`<div class="vis"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Race car at ${sc} points"><rect width="${W}" height="${H}" fill="${k==="levi"?"#141b45":"#1d1d21"}"/><rect y="26" width="${W}" height="30" fill="#2c2c33"/><line x1="0" y1="41" x2="${W}" y2="41" stroke="#f4efe9" stroke-dasharray="14 12" stroke-opacity=".5"/>
